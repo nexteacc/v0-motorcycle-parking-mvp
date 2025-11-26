@@ -1,0 +1,149 @@
+"use client"
+
+import type React from "react"
+
+import { useRef, useState, useCallback, useEffect } from "react"
+import { Camera, SwitchCamera, ImageIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+interface CameraCaptureProps {
+  onCapture: (imageDataUrl: string) => void
+}
+
+export function CameraCapture({ onCapture }: CameraCaptureProps) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isStreaming, setIsStreaming] = useState(false)
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment")
+  const [error, setError] = useState<string | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+
+  const startCamera = useCallback(async () => {
+    try {
+      setError(null)
+
+      // Stop existing stream
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode,
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      })
+
+      streamRef.current = stream
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        await videoRef.current.play()
+        setIsStreaming(true)
+      }
+    } catch (err) {
+      console.error("Camera error:", err)
+      setError("无法访问摄像头，请检查权限设置或使用相册上传")
+      setIsStreaming(false)
+    }
+  }, [facingMode])
+
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null
+    }
+    setIsStreaming(false)
+  }, [])
+
+  useEffect(() => {
+    startCamera()
+    return () => stopCamera()
+  }, [startCamera, stopCamera])
+
+  const handleCapture = () => {
+    if (!videoRef.current || !canvasRef.current) return
+
+    const video = videoRef.current
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext("2d")
+
+    if (!ctx) return
+
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    ctx.drawImage(video, 0, 0)
+
+    const imageDataUrl = canvas.toDataURL("image/jpeg", 0.8)
+    stopCamera()
+    onCapture(imageDataUrl)
+  }
+
+  const handleSwitchCamera = () => {
+    setFacingMode((prev) => (prev === "user" ? "environment" : "user"))
+  }
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const result = event.target?.result as string
+      if (result) {
+        stopCamera()
+        onCapture(result)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="relative aspect-video overflow-hidden rounded-lg bg-black">
+        <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+        <canvas ref={canvasRef} className="hidden" />
+
+        {!isStreaming && !error && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted">
+            <div className="text-center text-muted-foreground">
+              <Camera className="mx-auto h-12 w-12 mb-2 animate-pulse" />
+              <p>正在启动摄像头...</p>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted">
+            <div className="text-center text-muted-foreground p-4">
+              <Camera className="mx-auto h-12 w-12 mb-2 opacity-50" />
+              <p className="text-sm">{error}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-3">
+        <Button variant="outline" size="icon" onClick={handleSwitchCamera} disabled={!isStreaming}>
+          <SwitchCamera className="h-5 w-5" />
+        </Button>
+
+        <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleCapture} disabled={!isStreaming}>
+          <Camera className="mr-2 h-5 w-5" />
+          拍照
+        </Button>
+
+        <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
+          <ImageIcon className="h-5 w-5" />
+        </Button>
+
+        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
+      </div>
+    </div>
+  )
+}
