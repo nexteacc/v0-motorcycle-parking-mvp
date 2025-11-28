@@ -1,7 +1,9 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
-import { QrCode, Search, Check, Undo2, Loader2, Clock } from "lucide-react"
+import { QrCode, Search, Check, Undo2, Loader2, Clock, ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,10 +19,10 @@ import { QRScanner } from "@/components/qr-scanner"
 import { createClient } from "@/lib/supabase/client"
 import type { Ticket } from "@/lib/types"
 
-type Mode = "scan" | "search" | "confirm" | "success"
+type Mode = "select" | "qr-scan" | "upload-scan" | "search" | "confirm" | "success"
 
 export default function ExitPage() {
-  const [mode, setMode] = useState<Mode>("scan")
+  const [mode, setMode] = useState<Mode>("select")
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<Ticket[]>([])
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
@@ -221,7 +223,40 @@ export default function ExitPage() {
     setSearchQuery("")
     setSearchResults([])
     setError(null)
-    setMode("scan")
+    setMode("select")
+  }
+
+  const handleQRImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const result = event.target?.result as string
+      if (result) {
+        // Use jsQR to decode from image
+        const img = new Image()
+        img.onload = async () => {
+          const canvas = document.createElement("canvas")
+          canvas.width = img.width
+          canvas.height = img.height
+          const ctx = canvas.getContext("2d")
+          if (ctx) {
+            ctx.drawImage(img, 0, 0)
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+            // Use jsQR library (should be imported at top)
+            const code = (window as any).jsQR(imageData.data, imageData.width, imageData.height)
+            if (code) {
+              handleQRScan(code.data)
+            } else {
+              setError("无法识别二维码，请确保图片清晰")
+            }
+          }
+        }
+        img.src = result
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   const formatDuration = (entryTime: string, exitTime?: string | null) => {
@@ -247,29 +282,60 @@ export default function ExitPage() {
       </header>
 
       <main className="mx-auto max-w-md px-4 py-6">
-        {(mode === "scan" || mode === "search") && (
+        {mode === "select" && (
           <div className="space-y-4">
-            {/* Mode Toggle */}
-            <div className="flex gap-2">
-              <Button
-                variant={mode === "scan" ? "default" : "outline"}
-                className="flex-1"
-                onClick={() => setMode("scan")}
-              >
-                <QrCode className="mr-2 h-4 w-4" />
-                扫码出场
-              </Button>
-              <Button
-                variant={mode === "search" ? "default" : "outline"}
-                className="flex-1"
-                onClick={() => setMode("search")}
-              >
-                <Search className="mr-2 h-4 w-4" />
-                搜索车牌
-              </Button>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>选择出场方式</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button
+                  className="w-full h-16 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                  onClick={() => setMode("qr-scan")}
+                >
+                  <QrCode className="mr-3 h-5 w-5" />
+                  <span className="text-base">扫描二维码</span>
+                </Button>
+                <Button
+                  className="w-full h-16 bg-gradient-to-r from-primary/80 to-accent/80 hover:from-primary/70 hover:to-accent/70"
+                  onClick={() => setMode("upload-scan")}
+                >
+                  <ImageIcon className="mr-3 h-5 w-5" />
+                  <span className="text-base">上传二维码图片</span>
+                </Button>
+                <Button variant="outline" className="w-full h-16 bg-transparent" onClick={() => setMode("search")}>
+                  <Search className="mr-3 h-5 w-5" />
+                  <span className="text-base">搜索车牌</span>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-            {mode === "scan" && (
+        {(mode === "qr-scan" || mode === "upload-scan" || mode === "search") && (
+          <div className="space-y-4">
+            {mode !== "search" && (
+              <div className="flex gap-2">
+                <Button
+                  variant={mode === "qr-scan" ? "default" : "outline"}
+                  className="flex-1"
+                  onClick={() => setMode("qr-scan")}
+                >
+                  <QrCode className="mr-2 h-4 w-4" />
+                  扫描二维码
+                </Button>
+                <Button
+                  variant={mode === "upload-scan" ? "default" : "outline"}
+                  className="flex-1"
+                  onClick={() => setMode("upload-scan")}
+                >
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  上传图片
+                </Button>
+              </div>
+            )}
+
+            {mode === "qr-scan" && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -285,6 +351,60 @@ export default function ExitPage() {
                       <span>正在查询...</span>
                     </div>
                   )}
+                  <Button variant="outline" className="w-full mt-4 bg-transparent" onClick={() => setMode("select")}>
+                    返回选择
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {mode === "upload-scan" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5" />
+                    上传二维码图片
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div
+                    className="relative aspect-video overflow-hidden rounded-lg border-2 border-dashed border-muted-foreground/50 bg-muted/30 flex items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => {
+                      const input = document.createElement("input")
+                      input.type = "file"
+                      input.accept = "image/*"
+                      input.onchange = (e) => {
+                        const target = e.target as HTMLInputElement
+                        const event = {
+                          target: { files: target.files },
+                        } as React.ChangeEvent<HTMLInputElement>
+                        handleQRImageUpload(event)
+                      }
+                      input.click()
+                    }}
+                  >
+                    <div className="text-center">
+                      <ImageIcon className="mx-auto h-12 w-12 mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">点击上传二维码图片</p>
+                    </div>
+                  </div>
+                  {isLoading && (
+                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>正在识别...</span>
+                    </div>
+                  )}
+                  {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+                  <Button
+                    variant="outline"
+                    className="w-full bg-transparent"
+                    onClick={() => {
+                      setError(null)
+                      setMode("select")
+                    }}
+                  >
+                    返回选择
+                  </Button>
                 </CardContent>
               </Card>
             )}
@@ -335,7 +455,9 @@ export default function ExitPage() {
               </Card>
             )}
 
-            {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+            {error && mode !== "upload-scan" && (
+              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+            )}
           </div>
         )}
 
@@ -392,7 +514,7 @@ export default function ExitPage() {
                 取消
               </Button>
               <Button
-                className="flex-1 bg-orange-600 hover:bg-orange-700"
+                className="flex-1 bg-primary hover:bg-primary/90"
                 onClick={handleConfirmExit}
                 disabled={isLoading || selectedTicket.status !== "active"}
               >
@@ -411,12 +533,12 @@ export default function ExitPage() {
 
         {mode === "success" && exitedTicket && (
           <div className="space-y-4">
-            <Card className="border-orange-200 bg-orange-50">
+            <Card className="border-primary/20 bg-primary/5">
               <CardHeader className="text-center">
-                <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
-                  <Check className="h-6 w-6 text-orange-600" />
+                <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <Check className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle className="text-orange-700">出场登记成功</CardTitle>
+                <CardTitle className="text-primary">出场登记成功</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="rounded-lg bg-white p-4 space-y-3">
@@ -456,7 +578,7 @@ export default function ExitPage() {
             </Card>
 
             <div className="flex gap-3">
-              <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setMode("scan")}>
+              <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setMode("select")}>
                 继续出场
               </Button>
             </div>

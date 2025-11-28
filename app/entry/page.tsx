@@ -1,9 +1,11 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Camera, Edit2, Check, X, AlertTriangle, Loader2 } from "lucide-react"
+import { Camera, Edit2, Check, X, AlertTriangle, Loader2, ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,11 +22,11 @@ import { CameraCapture } from "@/components/camera-capture"
 import { createClient } from "@/lib/supabase/client"
 import type { Ticket } from "@/lib/types"
 
-type Step = "capture" | "confirm" | "success"
+type Step = "select" | "camera" | "upload" | "confirm" | "success"
 
 export default function EntryPage() {
   const router = useRouter()
-  const [step, setStep] = useState<Step>("capture")
+  const [step, setStep] = useState<Step>("select")
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [plateNumber, setPlateNumber] = useState("")
   const [isEditing, setIsEditing] = useState(false)
@@ -33,6 +35,7 @@ export default function EntryPage() {
   const [isOcrLoading, setIsOcrLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [createdTicket, setCreatedTicket] = useState<Ticket | null>(null)
+  const [imageSource, setImageSource] = useState<"camera" | "upload" | null>(null)
 
   // Duplicate plate handling
   const [duplicateTicket, setDuplicateTicket] = useState<Ticket | null>(null)
@@ -83,6 +86,20 @@ export default function EntryPage() {
     } finally {
       setIsOcrLoading(false)
     }
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = async (event) => {
+      const result = event.target?.result as string
+      if (result) {
+        await handlePhotoCapture(result)
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   const checkDuplicatePlate = async (plate: string): Promise<Ticket | null> => {
@@ -213,7 +230,8 @@ export default function EntryPage() {
     setEditedPlate("")
     setIsEditing(false)
     setError(null)
-    setStep("capture")
+    setStep("select")
+    setImageSource(null)
   }
 
   const handleNewEntry = () => {
@@ -223,7 +241,8 @@ export default function EntryPage() {
     setIsEditing(false)
     setError(null)
     setCreatedTicket(null)
-    setStep("capture")
+    setStep("select")
+    setImageSource(null)
   }
 
   return (
@@ -235,7 +254,39 @@ export default function EntryPage() {
       </header>
 
       <main className="mx-auto max-w-md px-4 py-6">
-        {step === "capture" && (
+        {step === "select" && (
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>选择图片来源</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button
+                  className="w-full h-16 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                  onClick={() => {
+                    setImageSource("camera")
+                    setStep("camera")
+                  }}
+                >
+                  <Camera className="mr-3 h-5 w-5" />
+                  <span className="text-base">拍照</span>
+                </Button>
+                <Button
+                  className="w-full h-16 bg-gradient-to-r from-primary/80 to-accent/80 hover:from-primary/70 hover:to-accent/70"
+                  onClick={() => {
+                    setImageSource("upload")
+                    setStep("upload")
+                  }}
+                >
+                  <ImageIcon className="mr-3 h-5 w-5" />
+                  <span className="text-base">上传图片</span>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {step === "camera" && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -251,6 +302,57 @@ export default function EntryPage() {
                   <span>正在识别车牌...</span>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        )}
+
+        {step === "upload" && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ImageIcon className="h-5 w-5" />
+                上传车辆照片
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div
+                className="relative aspect-video overflow-hidden rounded-lg border-2 border-dashed border-muted-foreground/50 bg-muted/30 flex items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => {
+                  const input = document.createElement("input")
+                  input.type = "file"
+                  input.accept = "image/*"
+                  input.onchange = (e) => {
+                    const target = e.target as HTMLInputElement
+                    const event = {
+                      target: { files: target.files },
+                    } as React.ChangeEvent<HTMLInputElement>
+                    handleImageUpload(event)
+                  }
+                  input.click()
+                }}
+              >
+                <div className="text-center">
+                  <ImageIcon className="mx-auto h-12 w-12 mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">点击上传或拖拽图片</p>
+                </div>
+                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} id="upload-input" />
+              </div>
+              {isOcrLoading && (
+                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>正在识别车牌...</span>
+                </div>
+              )}
+              <Button
+                variant="outline"
+                className="w-full bg-transparent"
+                onClick={() => {
+                  setStep("select")
+                  setImageSource(null)
+                }}
+              >
+                返回选择
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -306,7 +408,7 @@ export default function EntryPage() {
                 重新拍照
               </Button>
               <Button
-                className="flex-1 bg-green-600 hover:bg-green-700"
+                className="flex-1 bg-primary hover:bg-primary/90"
                 onClick={() => handleConfirmEntry(false)}
                 disabled={isLoading || (!plateNumber && !editedPlate)}
               >
@@ -351,7 +453,7 @@ export default function EntryPage() {
               <Button variant="outline" className="flex-1 bg-transparent" asChild>
                 <Link href="/">返回首页</Link>
               </Button>
-              <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleNewEntry}>
+              <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={handleNewEntry}>
                 继续入场
               </Button>
             </div>
