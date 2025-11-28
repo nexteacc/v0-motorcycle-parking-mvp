@@ -1,82 +1,84 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  /* Light theme */
+  --background: oklch(0.98 0 0); /* White background */
+  --foreground: oklch(0.15 0 0); /* Dark text */
+  --card: oklch(1 0 0); /* White card */
+  --card-foreground: oklch(0.15 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.15 0 0);
+  --primary: oklch(0.52 0.18 213); /* Elegant teal-blue brand color */
+  --primary-foreground: oklch(1 0 0); /* White text on primary */
+  --secondary: oklch(0.92 0 0); /* Light secondary */
+  --secondary-foreground: oklch(0.15 0 0);
+  --muted: oklch(0.88 0 0); /* Muted backgrounds */
+  --muted-foreground: oklch(0.45 0 0); /* Muted text */
+  --accent: oklch(0.55 0.2 185); /* Cyan accent for highlights */
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.58 0.22 27); /* Red for destructive actions */
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.92 0 0); /* Light borders */
+  --input: oklch(0.95 0 0); /* Light input fields */
+  --ring: oklch(0.52 0.18 213); /* Teal ring for focus states */
+  --chart-1: oklch(0.52 0.18 213); /* Teal */
+  --chart-2: oklch(0.55 0.2 185); /* Cyan */
+  --chart-3: oklch(0.6 0.15 270); /* Purple */
+  --chart-4: oklch(0.5 0.16 120); /* Green */
+  --chart-5: oklch(0.65 0.15 50); /* Gold */
+  --radius: 0.75rem;
+  --sidebar: oklch(0.96 0 0);
+  --sidebar-foreground: oklch(0.15 0 0);
+  --sidebar-primary: oklch(0.52 0.18 213);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.88 0 0);
+  --sidebar-accent-foreground: oklch(0.15 0 0);
+  --sidebar-border: oklch(0.92 0 0);
+  --sidebar-ring: oklch(0.52 0.18 213);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  /* Dark theme */
+  --background: oklch(0.08 0 0); /* Deep dark background */
+  --foreground: oklch(0.95 0 0); /* Nearly white text */
+  --card: oklch(0.12 0 0); /* Slightly lighter card background */
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.12 0 0);
+  --popover-foreground: oklch(0.95 0 0);
+  --primary: oklch(0.52 0.18 213);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.18 0 0); /* Dark secondary */
+  --secondary-foreground: oklch(0.95 0 0);
+  --muted: oklch(0.25 0 0); /* Muted backgrounds */
+  --muted-foreground: oklch(0.65 0 0); /* Muted text */
+  --accent: oklch(0.55 0.2 185);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.58 0.22 27);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.2 0 0); /* Dark borders */
+  --input: oklch(0.16 0 0); /* Dark input fields */
+  --ring: oklch(0.52 0.18 213);
+  --chart-1: oklch(0.52 0.18 213);
+  --chart-2: oklch(0.55 0.2 185);
+  --chart-3: oklch(0.6 0.15 270);
+  --chart-4: oklch(0.5 0.16 120);
+  --chart-5: oklch(0.65 0.15 50);
+  --sidebar: oklch(0.1 0 0);
+  --sidebar-foreground: oklch(0.95 0 0);
+  --sidebar-primary: oklch(0.52 0.18 213);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.25 0 0);
+  --sidebar-accent-foreground: oklch(0.95 0 0);
+  --sidebar-border: oklch(0.18 0 0);
+  --sidebar-ring: oklch(0.52 0.18 213);
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -121,5 +123,20 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Add smooth transitions and elegant hover effects */
+@layer utilities {
+  .transition-elegant {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .shadow-glass {
+    @apply shadow-2xl backdrop-blur-md;
+  }
+
+  .gradient-primary {
+    @apply bg-gradient-to-br from-primary via-primary/80 to-accent;
   }
 }

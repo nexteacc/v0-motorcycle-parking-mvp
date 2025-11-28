@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Camera, Edit2, Check, X, AlertTriangle, Loader2 } from "lucide-react"
+import { Camera, Edit2, Check, X, AlertTriangle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -227,21 +227,14 @@ export default function EntryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Link href="/">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <h1 className="text-lg font-semibold text-foreground">入场登记</h1>
-          </div>
+    <div className="min-h-screen bg-background pb-24">
+      <header className="sticky top-0 z-10 border-b bg-card/50 backdrop-blur-md">
+        <div className="mx-auto max-w-md px-4 py-3">
+          <h1 className="text-lg font-semibold text-foreground">入场登记</h1>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 max-w-lg">
+      <main className="mx-auto max-w-md px-4 py-6">
         {step === "capture" && (
           <Card>
             <CardHeader>

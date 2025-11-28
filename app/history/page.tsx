@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Search, Filter, Clock, Car, RefreshCw, Loader2 } from "lucide-react"
+import { Clock, Car, RefreshCw, Loader2, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -13,11 +12,10 @@ import type { Ticket, TicketStatus } from "@/lib/types"
 
 type FilterStatus = "all" | TicketStatus
 
-export default function VehiclesPage() {
+export default function HistoryPage() {
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<FilterStatus>("active")
+  const [statusFilter, setStatusFilter] = useState<FilterStatus>("exited")
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const fetchTickets = async () => {
@@ -27,15 +25,11 @@ export default function VehiclesPage() {
       .from("tickets")
       .select("*")
       .eq("parking_lot_id", "default")
-      .order("entry_time", { ascending: false })
+      .order("exit_time", { ascending: false, nullsFirst: false })
       .limit(100)
 
     if (statusFilter !== "all") {
       query = query.eq("status", statusFilter)
-    }
-
-    if (searchQuery.trim()) {
-      query = query.ilike("plate_number", `%${searchQuery.toUpperCase()}%`)
     }
 
     const { data, error } = await query
@@ -49,11 +43,6 @@ export default function VehiclesPage() {
     setIsLoading(true)
     fetchTickets().finally(() => setIsLoading(false))
   }, [statusFilter])
-
-  const handleSearch = () => {
-    setIsLoading(true)
-    fetchTickets().finally(() => setIsLoading(false))
-  }
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -90,14 +79,13 @@ export default function VehiclesPage() {
     )
   }
 
-  const activeCount = tickets.filter((t) => t.status === "active").length
-
   return (
     <div className="min-h-screen bg-background pb-24">
+      {/* Header */}
       <header className="sticky top-0 z-30 border-b border-border/50 bg-background/95 backdrop-blur-md">
         <div className="mx-auto max-w-md px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-semibold text-foreground">车辆列表</h1>
+            <h1 className="text-lg font-semibold text-foreground">历史记录</h1>
             <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
               <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} />
             </Button>
@@ -106,49 +94,21 @@ export default function VehiclesPage() {
       </header>
 
       <main className="mx-auto max-w-md px-4 py-4">
-        {/* Stats */}
-        <Card className="mb-4 bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-200/50">
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Car className="h-5 w-5 text-green-600" />
-                <span className="text-sm text-muted-foreground">当前在场车辆</span>
-              </div>
-              <span className="text-2xl font-bold text-green-600">{activeCount}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Search and Filter */}
-        <div className="mb-4 space-y-3">
-          <div className="flex gap-2">
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
-              placeholder="搜索车牌号"
-              className="font-mono text-sm"
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            />
-            <Button onClick={handleSearch} disabled={isLoading} size="sm">
-              <Search className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as FilterStatus)}>
-              <SelectTrigger className="w-full text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部</SelectItem>
-                <SelectItem value="active">在场</SelectItem>
-                <SelectItem value="exited">已出场</SelectItem>
-                <SelectItem value="abnormal">异常</SelectItem>
-                <SelectItem value="error">错误</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Status Filter */}
+        <div className="mb-4 flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as FilterStatus)}>
+            <SelectTrigger className="w-full text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部记录</SelectItem>
+              <SelectItem value="exited">已出场</SelectItem>
+              <SelectItem value="active">在场</SelectItem>
+              <SelectItem value="abnormal">异常</SelectItem>
+              <SelectItem value="error">错误</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* List */}
@@ -158,8 +118,8 @@ export default function VehiclesPage() {
           </div>
         ) : tickets.length === 0 ? (
           <div className="text-center py-12">
-            <Car className="mx-auto h-12 w-12 text-muted-foreground/50 mb-2" />
-            <p className="text-muted-foreground text-sm">暂无车辆记录</p>
+            <Clock className="mx-auto h-12 w-12 text-muted-foreground/50 mb-2" />
+            <p className="text-muted-foreground text-sm">暂无历史记录</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -168,9 +128,9 @@ export default function VehiclesPage() {
                 <Card className="transition-all hover:shadow-md hover:border-primary/50 active:scale-95">
                   <CardContent className="py-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
                         {ticket.photo_url ? (
-                          <div className="h-12 w-12 overflow-hidden rounded bg-muted">
+                          <div className="h-12 w-12 overflow-hidden rounded flex-shrink-0 bg-muted">
                             <img
                               src={ticket.photo_url || "/placeholder.svg"}
                               alt=""
@@ -178,13 +138,13 @@ export default function VehiclesPage() {
                             />
                           </div>
                         ) : (
-                          <div className="flex h-12 w-12 items-center justify-center rounded bg-muted">
+                          <div className="flex h-12 w-12 items-center justify-center rounded flex-shrink-0 bg-muted">
                             <Car className="h-6 w-6 text-muted-foreground" />
                           </div>
                         )}
-                        <div>
+                        <div className="min-w-0">
                           <p className="font-mono font-bold text-sm">{ticket.plate_number}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-muted-foreground truncate">
                             {new Date(ticket.entry_time).toLocaleString("zh-CN", {
                               month: "numeric",
                               day: "numeric",
@@ -194,12 +154,14 @@ export default function VehiclesPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1">
+                      <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
                         {getStatusBadge(ticket.status)}
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {formatDuration(ticket.entry_time, ticket.exit_time)}
-                        </span>
+                        {ticket.exit_time && (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            {formatDuration(ticket.entry_time, ticket.exit_time)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </CardContent>

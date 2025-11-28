@@ -1,67 +1,81 @@
+"use client"
+
 import Link from "next/link"
-import { Car, LogIn, LogOut, List } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Car, LogIn, LogOut, List, Clock } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function HomePage() {
+  const quickActions = [
+    { href: "/entry", icon: LogIn, title: "入场登记", description: "快速拍照记录" },
+    { href: "/exit", icon: LogOut, title: "出场登记", description: "扫码或搜索" },
+    { href: "/vehicles", icon: List, title: "车辆列表", description: "所有停车记录" },
+    { href: "/history", icon: Clock, title: "历史记录", description: "查看所有历史" },
+  ]
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
+    <div className="min-h-screen bg-background pb-24">
+      {/* Header */}
+      <header className="sticky top-0 z-30 border-b border-border/50 bg-background/95 backdrop-blur-md">
+        <div className="mx-auto max-w-md px-4 py-4">
           <div className="flex items-center gap-3">
-            <Car className="h-8 w-8 text-primary" />
-            <h1 className="text-xl font-bold text-foreground">摩托车停车管理系统</h1>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+              <Car className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight">停车管理</h1>
+              <p className="text-xs text-muted-foreground">摩托车停车平台</p>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-6 md:grid-cols-3">
-          <Link href="/entry" className="block">
-            <Card className="h-full transition-all hover:shadow-lg hover:border-primary">
-              <CardHeader className="text-center">
-                <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                  <LogIn className="h-8 w-8 text-green-600" />
-                </div>
-                <CardTitle className="text-lg">入场登记</CardTitle>
-                <CardDescription>拍照识别车牌，生成电子停车票</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full bg-green-600 hover:bg-green-700">开始入场</Button>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/exit" className="block">
-            <Card className="h-full transition-all hover:shadow-lg hover:border-primary">
-              <CardHeader className="text-center">
-                <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
-                  <LogOut className="h-8 w-8 text-orange-600" />
-                </div>
-                <CardTitle className="text-lg">出场登记</CardTitle>
-                <CardDescription>扫码或搜索车牌，确认出场</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full bg-orange-600 hover:bg-orange-700">开始出场</Button>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/vehicles" className="block">
-            <Card className="h-full transition-all hover:shadow-lg hover:border-primary">
-              <CardHeader className="text-center">
-                <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-                  <List className="h-8 w-8 text-blue-600" />
-                </div>
-                <CardTitle className="text-lg">车辆列表</CardTitle>
-                <CardDescription>查看在场车辆，搜索历史记录</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full bg-blue-600 hover:bg-blue-700">查看列表</Button>
-              </CardContent>
-            </Card>
-          </Link>
+      {/* Main Content */}
+      <main className="mx-auto max-w-md px-4 py-6">
+        {/* Hero Section */}
+        <div className="mb-8 text-center">
+          <h2 className="mb-2 text-2xl font-bold">欢迎回来</h2>
+          <p className="text-sm text-muted-foreground">选择需要的功能开始工作</p>
         </div>
+
+        {/* Quick Actions Grid */}
+        <div className="grid gap-3 grid-cols-2 mb-8">
+          {quickActions.map(({ href, icon: Icon, title, description }) => (
+            <Link key={href} href={href}>
+              <Card className="h-full cursor-pointer transition-all hover:border-primary/50 hover:shadow-md active:scale-95">
+                <CardContent className="p-4 flex flex-col items-center text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-2">
+                    <Icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-sm">{title}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{description}</p>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
+        {/* Stats Section */}
+        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-sm">今日概览</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold text-primary">--</div>
+                <p className="text-xs text-muted-foreground mt-1">当前停车</p>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-primary">--</div>
+                <p className="text-xs text-muted-foreground mt-1">今日入场</p>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-primary">--</div>
+                <p className="text-xs text-muted-foreground mt-1">今日出场</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   )

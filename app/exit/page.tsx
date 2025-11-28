@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
-import { ArrowLeft, QrCode, Search, Check, Undo2, Loader2, Clock } from "lucide-react"
+import { QrCode, Search, Check, Undo2, Loader2, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -240,21 +239,14 @@ export default function ExitPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Link href="/">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <h1 className="text-lg font-semibold text-foreground">出场登记</h1>
-          </div>
+    <div className="min-h-screen bg-background pb-24">
+      <header className="border-b bg-card/50 backdrop-blur-md sticky top-0 z-10">
+        <div className="mx-auto max-w-md px-4 py-3">
+          <h1 className="text-lg font-semibold text-foreground">出场登记</h1>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 max-w-lg">
+      <main className="mx-auto max-w-md px-4 py-6">
         {(mode === "scan" || mode === "search") && (
           <div className="space-y-4">
             {/* Mode Toggle */}
@@ -464,10 +456,7 @@ export default function ExitPage() {
             </Card>
 
             <div className="flex gap-3">
-              <Button variant="outline" className="flex-1 bg-transparent" asChild>
-                <Link href="/">返回首页</Link>
-              </Button>
-              <Button className="flex-1 bg-orange-600 hover:bg-orange-700" onClick={handleNewExit}>
+              <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setMode("scan")}>
                 继续出场
               </Button>
             </div>
