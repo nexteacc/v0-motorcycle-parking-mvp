@@ -98,7 +98,7 @@ export default function ExitPage() {
         .select("id, plate_number, entry_time, exit_time, photo_url, vehicle_color, status, device_id, parking_lot_id, plate_modified, original_plate_number, created_at, updated_at")
         .eq("parking_lot_id", "default")
         .eq("status", "active")
-        .ilike("plate_number", `%${query.toUpperCase()}%`)
+        .ilike("plate_number", `%${query}%`) // 使用原始查询，Supabase 的 ilike 不区分大小写
         .order("entry_time", { ascending: false })
         .limit(10)
 
@@ -439,10 +439,11 @@ export default function ExitPage() {
                     <Input
                       value={searchQuery}
                       onChange={(e) => {
-                        setSearchQuery(e.target.value.toUpperCase())
+                        // 支持多国车牌格式搜索，不强制转大写
+                        setSearchQuery(e.target.value)
                         clearError()
                       }}
-                      placeholder="输入车牌号（实时搜索）"
+                      placeholder="输入车牌号（实时搜索，支持全球格式）"
                       className="font-mono"
                     />
                     <Button onClick={handleSearch} disabled={isSearching} variant="outline">

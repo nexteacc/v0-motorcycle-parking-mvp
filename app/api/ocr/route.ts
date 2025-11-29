@@ -10,27 +10,22 @@ const RESPONSE_SCHEMA = {
   properties: {
     plate_number: {
       type: ["string", "null"],
-      description: "识别到的车牌号，使用大写字母与数字",
+      description: "识别到的车牌号",
     },
     confidence: {
       type: ["number", "null"],
-      description: "0-1 之间的置信度",
+      description: "置信度 0-1",
     },
     color: {
       type: ["string", "null"],
-      description: "车辆颜色，暂未启用，可返回 null",
+      description: "车辆颜色",
     },
   },
   required: ["plate_number", "confidence", "color"],
   additionalProperties: false,
 } as const
 
-const PROMPT = `你是一名停车场入场登记助手。请从给定的车辆照片中识别车牌号，并按照下列要求输出：
-- 如果可以确定车牌号，请返回全大写、无空格的车牌号，例如 "沪A12345"。
-- 如果无法确定车牌号，请返回 null。
-- confidence 字段需要在 0 到 1 之间，表示对车牌识别的置信度；无法识别时返回 0。
-- color 字段目前保留，统一返回 null。
-仅输出 JSON。`
+const PROMPT = `从车辆照片中识别车牌号。如果可以识别，返回完整车牌号（保持原始格式）；无法识别则返回 null。confidence 表示置信度（0-1），无法识别时为 0。color 返回 null。仅输出 JSON。`
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,11 +72,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 验证 base64 图片数据
-    // 确保图片数据是 data URL 格式（data:image/jpeg;base64,...）
     let imageDataUrl = image
     if (!image.startsWith("data:")) {
-      // 如果不是 data URL 格式，添加前缀
       imageDataUrl = `data:image/jpeg;base64,${image}`
     }
     
@@ -98,8 +90,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 调用 OpenAI API
-    // 根据官方文档，base64 图片应使用 image_url 字段，格式为 data URL
     let response
     try {
       response = await openai.responses.create({
@@ -112,7 +102,8 @@ export async function POST(request: NextRequest) {
               { type: "input_text", text: PROMPT },
               { 
                 type: "input_image", 
-                image_url: imageDataUrl, // 使用 image_url 而不是 image_base64
+                image_url: imageDataUrl,
+                detail: "auto",
               },
             ],
           },
@@ -133,7 +124,6 @@ export async function POST(request: NextRequest) {
         code: apiError?.code,
       })
       
-      // 提供更具体的错误信息
       let errorMessage = "AI 识别服务暂时不可用，请稍后重试"
       if (apiError?.status === 401) {
         errorMessage = "API 密钥无效，请联系管理员"
@@ -156,8 +146,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 解析响应
-    // 根据官方 API 响应格式：output[0] 是 message 类型，content[0] 是 output_text 类型
     const outputMessage = response.output?.[0]
     if (!outputMessage || outputMessage.type !== "message") {
       console.error("OCR API: Invalid response format - no message output:", response)
@@ -173,7 +161,7 @@ export async function POST(request: NextRequest) {
     }
 
     const textContent = outputMessage.content?.find((item: any) => item.type === "output_text")
-    const rawText = textContent?.text
+    const rawText = textContent && "text" in textContent ? textContent.text : undefined
 
     if (!rawText) {
       console.error("OCR API: No text in response:", response)
@@ -184,7 +172,7 @@ export async function POST(request: NextRequest) {
           color: null, 
           error: "未获取到识别结果，请重新尝试" 
         },
-        { status: 200 } // 返回 200 但包含错误信息，让客户端可以处理
+        { status: 200 }
       )
     }
 
@@ -205,7 +193,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      plateNumber: typeof parsed.plate_number === "string" ? parsed.plate_number.toUpperCase() : null,
+      plateNumber: typeof parsed.plate_number === "string" ? parsed.plate_number : null,
       confidence: typeof parsed.confidence === "number" ? parsed.confidence : null,
       color: parsed.color ?? null,
     })

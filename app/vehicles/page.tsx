@@ -76,8 +76,11 @@ export default function VehiclesPage() {
           <div className="flex gap-2">
             <Input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
-              placeholder="搜索车牌号（实时搜索）"
+              onChange={(e) => {
+                // 支持多国车牌格式搜索，不强制转大写
+                setSearchQuery(e.target.value)
+              }}
+              placeholder="搜索车牌号（实时搜索，支持全球格式）"
               className="font-mono text-sm"
             />
             <Button onClick={refresh} disabled={isLoading || isRefreshing} size="sm" variant="outline">
@@ -131,6 +134,8 @@ export default function VehiclesPage() {
                               src={ticket.photo_url || "/placeholder.svg"}
                               alt=""
                               className="h-full w-full object-cover"
+                              loading="lazy"
+                              decoding="async"
                             />
                           </div>
                         ) : (

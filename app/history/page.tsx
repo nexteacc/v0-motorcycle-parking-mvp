@@ -99,6 +99,8 @@ export default function HistoryPage() {
                               src={ticket.photo_url || "/placeholder.svg"}
                               alt=""
                               className="h-full w-full object-cover"
+                              loading="lazy"
+                              decoding="async"
                             />
                           </div>
                         ) : (

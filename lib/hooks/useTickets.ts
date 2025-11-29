@@ -68,9 +68,9 @@ export function useTickets(options: UseTicketsOptions = {}): UseTicketsReturn {
         query = query.eq("status", statusFilter)
       }
 
-      // 使用防抖后的搜索关键词
+      // 使用防抖后的搜索关键词（支持多国车牌格式，不强制转大写）
       if (debouncedSearchQuery.trim()) {
-        query = query.ilike("plate_number", `%${debouncedSearchQuery.toUpperCase()}%`)
+        query = query.ilike("plate_number", `%${debouncedSearchQuery}%`) // ilike 不区分大小写
       }
 
       const { data, error: queryError } = await query

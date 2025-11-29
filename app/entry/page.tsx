@@ -167,17 +167,32 @@ export default function EntryPage() {
   }
 
   const checkDuplicatePlate = async (plate: string): Promise<Ticket | null> => {
-    const { data } = await supabase
+    // 支持多国车牌格式的重复检测
+    // 先尝试精确匹配（保留原始格式，包括大小写、连字符、空格等）
+    const { data: exactMatch } = await supabase
       .from("tickets")
       .select("*")
-      .eq("plate_number", plate)
+      .eq("plate_number", plate) // 精确匹配
       .eq("status", "active")
       .eq("parking_lot_id", "default")
       .order("entry_time", { ascending: false })
       .limit(1)
       .maybeSingle()
 
-    return data as Ticket | null
+    if (exactMatch) return exactMatch as Ticket | null
+
+    // 如果没有精确匹配，尝试不区分大小写的匹配（处理大小写变体）
+    const { data: caseInsensitiveMatch } = await supabase
+      .from("tickets")
+      .select("*")
+      .ilike("plate_number", plate.replace(/[%_]/g, "\\$&")) // 转义特殊字符，精确匹配但大小写不敏感
+      .eq("status", "active")
+      .eq("parking_lot_id", "default")
+      .order("entry_time", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    return caseInsensitiveMatch as Ticket | null
   }
 
   const uploadPhotoIfNeeded = async (finalPlate: string) => {
@@ -195,7 +210,8 @@ export default function EntryPage() {
   }
 
   const handleConfirmEntry = async (forceCreate = false) => {
-    const finalPlate = plateNumber.trim().toUpperCase()
+    // 支持多国车牌格式，不强制转大写，只去除首尾空格
+    const finalPlate = plateNumber.trim()
     if (!finalPlate) {
       setFormError("请输入车牌号")
       return
@@ -377,8 +393,11 @@ export default function EntryPage() {
                 <Input
                   ref={plateInputRef}
                   value={plateNumber}
-                  onChange={(e) => setPlateNumber(e.target.value.toUpperCase())}
-                  placeholder="请输入或扫描车牌号"
+                  onChange={(e) => {
+                    // 支持多国车牌格式，不强制转大写，保留原始格式（包括连字符、空格等）
+                    setPlateNumber(e.target.value)
+                  }}
+                  placeholder="请输入或扫描车牌号（支持全球各国格式）"
                   className="text-lg font-mono tracking-wide"
                   disabled={viewState === "processing"}
                 />
