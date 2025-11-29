@@ -81,7 +81,7 @@ export function useTickets(options: UseTicketsOptions = {}): UseTicketsReturn {
 
       setTickets((data as Ticket[]) || [])
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "查询车辆列表失败"
+      const errorMessage = err instanceof Error ? err.message : "Query failed"
       setError(errorMessage)
       console.error("Fetch tickets error:", err)
       setTickets([])

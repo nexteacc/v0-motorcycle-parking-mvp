@@ -59,7 +59,7 @@ export function useStats() {
         })
       } catch (err) {
         console.error("Fetch stats error:", err)
-        setError(err instanceof Error ? err.message : "获取统计数据失败")
+        setError(err instanceof Error ? err.message : "Failed to fetch stats")
       } finally {
         setIsLoading(false)
       }

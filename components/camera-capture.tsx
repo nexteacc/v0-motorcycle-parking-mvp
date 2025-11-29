@@ -53,20 +53,20 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
       }
     } catch (err: any) {
       console.error("Camera error:", err)
-      let errorMessage = "无法访问摄像头"
+      let errorMessage = "Unable to access camera"
       
       if (err?.name === "NotAllowedError" || err?.name === "PermissionDismissedError") {
-        errorMessage = "摄像头权限被拒绝，请在浏览器设置中允许摄像头访问，或使用相册上传图片"
+        errorMessage = "Camera permission denied, please allow access or use gallery"
       } else if (err?.name === "NotFoundError" || err?.name === "DevicesNotFoundError") {
-        errorMessage = "未找到摄像头设备，请使用相册上传图片"
+        errorMessage = "Camera not found, please use gallery"
       } else if (err?.name === "NotReadableError" || err?.name === "TrackStartError") {
-        errorMessage = "摄像头被其他应用占用，请关闭其他应用后重试，或使用相册上传"
+        errorMessage = "Camera in use, close other apps or use gallery"
       } else if (err?.name === "OverconstrainedError") {
-        errorMessage = "摄像头不支持所需设置，请使用相册上传图片"
+        errorMessage = "Camera settings not supported, please use gallery"
       } else if (err?.message) {
-        errorMessage = `摄像头错误：${err.message}，请使用相册上传图片`
+        errorMessage = `Camera error: ${err.message}, please use gallery`
       } else {
-        errorMessage = "无法访问摄像头，请检查权限设置或使用相册上传"
+        errorMessage = "Unable to access camera, check permissions or use gallery"
       }
       
       setError(errorMessage)
@@ -217,10 +217,10 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
         <div className="relative aspect-video overflow-hidden rounded-lg bg-muted border-2 border-dashed border-muted-foreground/50 flex items-center justify-center">
           <div className="text-center text-muted-foreground">
             <Camera className="mx-auto h-12 w-12 mb-2" />
-            <p className="text-sm">使用系统相机</p>
+            <p className="text-sm">System Camera</p>
             {isIOS && (
               <p className="text-xs mt-1 text-muted-foreground/70">
-                拍照后可使用键盘"扫描文本"识别车牌
+                Use "Scan Text" after capture
               </p>
             )}
           </div>
@@ -233,7 +233,7 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
             onClick={() => nativeCameraInputRef.current?.click()}
           >
             <Camera className="mr-2 h-5 w-5" />
-            {isIOS ? "使用相机拍照" : "拍照"}
+            {isIOS ? "Camera" : "Capture"}
           </Button>
 
           {/* 相册选择 */}
@@ -275,7 +275,7 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
           <div className="absolute inset-0 flex items-center justify-center bg-muted">
             <div className="text-center text-muted-foreground">
               <Camera className="mx-auto h-12 w-12 mb-2 animate-pulse" />
-              <p>正在启动摄像头...</p>
+              <p>Starting...</p>
             </div>
           </div>
         )}
@@ -297,7 +297,7 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
 
         <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleCapture} disabled={!isStreaming}>
           <Camera className="mr-2 h-5 w-5" />
-          拍照
+          Capture
         </Button>
 
         <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
