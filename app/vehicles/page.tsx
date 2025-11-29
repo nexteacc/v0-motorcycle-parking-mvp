@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Search, Filter, Clock, Car, RefreshCw, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SwipeableCard } from "@/components/swipeable-card"
@@ -77,7 +78,12 @@ export default function VehiclesPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-30 border-b border-border/50 bg-background/95 backdrop-blur-md">
+      <header 
+        className="sticky top-0 z-30 border-b border-border/50 bg-background/95 backdrop-blur-md"
+        style={{
+          paddingTop: `calc(0.75rem + env(safe-area-inset-top, 0px))`,
+        }}
+      >
         <div className="mx-auto max-w-md px-4 py-3">
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-semibold text-foreground">车辆列表</h1>

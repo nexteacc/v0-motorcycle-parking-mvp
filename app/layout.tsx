@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
@@ -16,20 +16,9 @@ export const metadata: Metadata = {
   description: "支持车牌识别、二维码扫码、实时追踪的现代化摩托车停车管理平台",
   generator: "v0.app",
   manifest: "/manifest.json",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#000000" },
-  ],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: "cover",
-  },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent", // 全屏模式，状态栏透明，内容延伸到状态栏下方
     title: "停车管理",
   },
   icons: {
@@ -51,6 +40,18 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -59,7 +60,12 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <header className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur-md">
+        <header 
+          className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur-md"
+          style={{
+            paddingTop: `calc(0.5rem + env(safe-area-inset-top, 0px))`,
+          }}
+        >
           <div className="mx-auto max-w-md px-4 py-2 flex items-center justify-end">
             <ThemeToggle />
           </div>

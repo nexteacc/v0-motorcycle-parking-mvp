@@ -335,7 +335,12 @@ export default function EntryPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-10 border-b bg-card/50 backdrop-blur-md">
+      <header 
+        className="sticky top-0 z-10 border-b bg-card/50 backdrop-blur-md"
+        style={{
+          paddingTop: `calc(0.75rem + env(safe-area-inset-top, 0px))`,
+        }}
+      >
         <div className="mx-auto max-w-md px-4 py-3">
           <h1 className="text-lg font-semibold text-foreground">入场登记</h1>
         </div>

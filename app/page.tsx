@@ -18,7 +18,12 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-border/50 bg-background/95 backdrop-blur-md">
+      <header 
+        className="sticky top-0 z-30 border-b border-border/50 bg-background/95 backdrop-blur-md"
+        style={{
+          paddingTop: `calc(1rem + env(safe-area-inset-top, 0px))`,
+        }}
+      >
         <div className="mx-auto max-w-md px-4 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
