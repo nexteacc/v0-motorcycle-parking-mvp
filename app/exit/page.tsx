@@ -303,35 +303,52 @@ export default function ExitPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-md px-4 py-6">
+      <main className="mx-auto max-w-md px-4 py-6 space-y-4">
         {mode === "select" && (
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>选择出场方式</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button
-                  className="w-full h-16 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-                  onClick={() => setMode("qr-scan")}
-                >
-                  <QrCode className="mr-3 h-5 w-5" />
-                  <span className="text-base">扫描二维码</span>
-                </Button>
-                <Button
-                  className="w-full h-16 bg-gradient-to-r from-primary/80 to-accent/80 hover:from-primary/70 hover:to-accent/70"
-                  onClick={() => setMode("upload-scan")}
-                >
-                  <ImageIcon className="mr-3 h-5 w-5" />
-                  <span className="text-base">上传二维码图片</span>
-                </Button>
-                <Button variant="outline" className="w-full h-16 bg-transparent" onClick={() => setMode("search")}>
-                  <Search className="mr-3 h-5 w-5" />
-                  <span className="text-base">搜索车牌</span>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>选择出场方式</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl border bg-card p-3">
+                  <div>
+                    <p className="text-xs font-medium">扫描二维码</p>
+                  </div>
+                  <div className="mt-3">
+                    <div
+                      className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors"
+                      onClick={() => setMode("qr-scan")}
+                    >
+                      <QrCode className="h-8 w-8 text-primary mb-1.5" />
+                      <p className="text-xs font-medium">扫描</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border bg-card p-3">
+                  <div>
+                    <p className="text-xs font-medium">上传图片</p>
+                  </div>
+                  <div className="mt-3">
+                    <div
+                      className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors"
+                      onClick={() => setMode("upload-scan")}
+                    >
+                      <ImageIcon className="h-8 w-8 text-primary mb-1.5" />
+                      <p className="text-xs font-medium">上传</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">支持 JPG / PNG</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Button variant="ghost" size="sm" className="w-full" onClick={() => setMode("search")}>
+                <Search className="mr-2 h-4 w-4" />
+                搜索
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         {(mode === "qr-scan" || mode === "upload-scan" || mode === "search") && (
@@ -362,7 +379,7 @@ export default function ExitPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <QrCode className="h-5 w-5" />
-                    扫描停车票二维码
+                    扫描二维码
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -373,7 +390,7 @@ export default function ExitPage() {
                       <span>正在查询...</span>
                     </div>
                   )}
-                  <Button variant="outline" className="w-full mt-4 bg-transparent" onClick={() => setMode("select")}>
+                  <Button variant="outline" className="w-full mt-4" onClick={() => setMode("select")}>
                     返回选择
                   </Button>
                 </CardContent>
@@ -385,12 +402,12 @@ export default function ExitPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ImageIcon className="h-5 w-5" />
-                    上传二维码图片
+                    上传二维码
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div
-                    className="relative aspect-video overflow-hidden rounded-lg border-2 border-dashed border-muted-foreground/50 bg-muted/30 flex items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+                    className="relative aspect-video overflow-hidden rounded-xl border-2 border-dashed border-muted-foreground/60 bg-muted/40 flex items-center justify-center cursor-pointer hover:bg-muted/70 transition-colors"
                     onClick={() => {
                       const input = document.createElement("input")
                       input.type = "file"
@@ -407,7 +424,7 @@ export default function ExitPage() {
                   >
                     <div className="text-center">
                       <ImageIcon className="mx-auto h-12 w-12 mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">点击上传二维码图片</p>
+                      <p className="text-sm text-muted-foreground">上传二维码</p>
                     </div>
                   </div>
                   {isLoading && (
@@ -416,10 +433,10 @@ export default function ExitPage() {
                       <span>正在识别...</span>
                     </div>
                   )}
-                  {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+                  {error && <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>}
                   <Button
                     variant="outline"
-                    className="w-full bg-transparent"
+                    className="w-full"
                     onClick={() => {
                       clearError()
                       setMode("select")
@@ -436,7 +453,7 @@ export default function ExitPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Search className="h-5 w-5" />
-                    搜索车牌号
+                    搜索
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -448,7 +465,7 @@ export default function ExitPage() {
                         setSearchQuery(e.target.value)
                         clearError()
                       }}
-                      placeholder="输入车牌号（实时搜索，支持全球格式）"
+                      placeholder="输入车牌号"
                       className="font-mono"
                     />
                     <Button onClick={handleSearch} disabled={isSearching} variant="outline">
@@ -486,133 +503,113 @@ export default function ExitPage() {
             )}
 
             {error && mode !== "upload-scan" && (
-              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+              <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>
             )}
           </div>
         )}
 
         {mode === "confirm" && selectedTicket && (
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>确认出场信息</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {selectedTicket.photo_url && (
-                  <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-                    <img
-                      src={selectedTicket.photo_url || "/placeholder.svg"}
-                      alt="车辆照片"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                )}
+          <Card>
+            <CardHeader>
+              <CardTitle>确认出场信息</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {selectedTicket.photo_url && (
+                <div className="relative aspect-video overflow-hidden rounded-xl border bg-muted">
+                  <img
+                    src={selectedTicket.photo_url || "/placeholder.svg"}
+                    alt="车辆照片"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
 
-                <div className="rounded-lg bg-muted/50 p-4 space-y-3">
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground">车牌号码</p>
-                    <p className="text-2xl font-mono font-bold">{selectedTicket.plate_number}</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">入场时间</p>
-                      <p className="font-medium">{new Date(selectedTicket.entry_time).toLocaleString("zh-CN")}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">停车时长</p>
-                      <p className="font-medium flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {formatDuration(selectedTicket.entry_time)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {selectedTicket.status !== "active" && (
-                    <div className="rounded bg-orange-100 p-2 text-center text-sm text-orange-700">
-                      状态: {selectedTicket.status === "exited" ? "已出场" : selectedTicket.status}
-                    </div>
-                  )}
+              <div className="rounded-lg bg-muted/50 p-4 space-y-3">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">车牌号码</p>
+                  <p className="text-2xl font-mono font-bold">{selectedTicket.plate_number}</p>
                 </div>
 
-                {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-              </CardContent>
-            </Card>
-
-            <div className="flex gap-3">
-              <Button variant="outline" className="flex-1 bg-transparent" onClick={handleNewExit}>
-                取消
-              </Button>
-              <Button
-                className="flex-1 bg-primary hover:bg-primary/90"
-                onClick={handleConfirmExit}
-                disabled={isLoading || selectedTicket.status !== "active"}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    处理中...
-                  </>
-                ) : (
-                  "确认出场"
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {mode === "success" && exitedTicket && (
-          <div className="space-y-4">
-            <Card className="border-primary/20 bg-primary/5">
-              <CardHeader className="text-center">
-                <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                  <Check className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-primary">出场登记成功</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-lg bg-white p-4 space-y-3">
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground">车牌号码</p>
-                    <p className="text-2xl font-mono font-bold">{exitedTicket.plate_number}</p>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">入场时间</p>
+                    <p className="font-medium">{new Date(selectedTicket.entry_time).toLocaleString("zh-CN")}</p>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">入场时间</p>
-                      <p className="font-medium">{new Date(exitedTicket.entry_time).toLocaleString("zh-CN")}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">出场时间</p>
-                      <p className="font-medium">
-                        {exitedTicket.exit_time ? new Date(exitedTicket.exit_time).toLocaleString("zh-CN") : "-"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-center pt-2 border-t">
-                    <p className="text-sm text-muted-foreground">总停车时长</p>
-                    <p className="text-lg font-semibold">
-                      {formatDuration(exitedTicket.entry_time, exitedTicket.exit_time)}
+                  <div>
+                    <p className="text-muted-foreground">停车时长</p>
+                    <p className="font-medium flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      {formatDuration(selectedTicket.entry_time)}
                     </p>
                   </div>
                 </div>
 
-                {canUndo && (
-                  <Button variant="outline" className="w-full bg-transparent" onClick={() => setShowUndoDialog(true)}>
-                    <Undo2 className="mr-2 h-4 w-4" />
-                    撤销出场
-                  </Button>
+                {selectedTicket.status !== "active" && (
+                  <div className="rounded bg-orange-100 p-2 text-center text-sm text-orange-700">
+                    状态: {selectedTicket.status === "exited" ? "已出场" : selectedTicket.status}
+                  </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
 
-            <div className="flex gap-3">
-              <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setMode("select")}>
-                继续出场
-              </Button>
-            </div>
-          </div>
+              {error && <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>}
+
+              <div className="flex gap-3">
+                <Button variant="outline" className="flex-1" onClick={handleNewExit}>
+                  取消
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleConfirmExit}
+                  disabled={isLoading || selectedTicket.status !== "active"}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      处理中...
+                    </>
+                  ) : (
+                    "确认出场"
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {mode === "success" && exitedTicket && (
+          <Card className="border-green-200 bg-green-50">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                <Check className="h-6 w-6 text-green-600" />
+              </div>
+              <CardTitle className="text-green-700">出场登记成功</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg bg-white p-4 text-center">
+                <p className="text-sm text-muted-foreground">车牌号码</p>
+                <p className="text-2xl font-mono font-bold">{exitedTicket.plate_number}</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  出场时间: {exitedTicket.exit_time ? new Date(exitedTicket.exit_time).toLocaleString("zh-CN") : "-"}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  停车时长: {formatDuration(exitedTicket.entry_time, exitedTicket.exit_time)}
+                </p>
+              </div>
+              
+              {canUndo && (
+                <Button variant="outline" className="w-full" onClick={() => setShowUndoDialog(true)}>
+                  <Undo2 className="mr-2 h-4 w-4" />
+                  撤销出场
+                </Button>
+              )}
+              
+              <div className="flex gap-3">
+                <Button variant="outline" className="flex-1" onClick={() => setMode("select")}>
+                  继续出场
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </main>
 
@@ -627,7 +624,7 @@ export default function ExitPage() {
               此操作会被记录到系统日志中。
             </DialogDescription>
           </DialogHeader>
-          {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+          {error && <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>}
           <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button variant="outline" onClick={() => setShowUndoDialog(false)}>
               取消

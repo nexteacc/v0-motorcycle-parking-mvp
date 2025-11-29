@@ -358,7 +358,6 @@ export default function EntryPage() {
                 <div className="rounded-xl border bg-card p-3">
                   <div>
                     <p className="text-xs font-medium">拍照</p>
-                    <p className="text-[10px] text-muted-foreground">直接调用摄像头</p>
                   </div>
                   <div className="mt-3">
                     <div
@@ -366,10 +365,7 @@ export default function EntryPage() {
                       onClick={() => cameraInputRef.current?.click()}
                     >
                       <Camera className="h-8 w-8 text-primary mb-1.5" />
-                      <p className="text-xs font-medium">点击拍照</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {isIOS ? "系统相机" : "浏览器摄像头"}
-                      </p>
+                      <p className="text-xs font-medium">拍照</p>
                     </div>
                     {/* 隐藏的相机 input - 直接触发系统相机 */}
                     <input
@@ -386,7 +382,6 @@ export default function EntryPage() {
                 <div className="rounded-xl border bg-card p-3">
                   <div>
                     <p className="text-xs font-medium">上传图片</p>
-                    <p className="text-[10px] text-muted-foreground">选择相册或历史图片</p>
                   </div>
                   <div className="mt-3">
                     <div
@@ -394,7 +389,7 @@ export default function EntryPage() {
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <ImageIcon className="h-8 w-8 text-primary mb-1.5" />
-                      <p className="text-xs font-medium">点击上传图片</p>
+                      <p className="text-xs font-medium">上传</p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">支持 JPG / PNG</p>
                     </div>
                     <input
@@ -409,7 +404,7 @@ export default function EntryPage() {
               </div>
 
               <Button variant="ghost" size="sm" className="w-full" onClick={handleManualEntry}>
-                无法拍照？直接手动登记
+                手动登记
               </Button>
             </CardContent>
           </Card>
@@ -436,7 +431,7 @@ export default function EntryPage() {
                 </div>
               ) : (
                 <div className="aspect-video rounded-xl border border-dashed flex items-center justify-center text-sm text-muted-foreground">
-                  暂无照片，直接手动输入车牌
+                  手动输入车牌
                 </div>
               )}
 
@@ -449,7 +444,7 @@ export default function EntryPage() {
                     // 支持多国车牌格式，不强制转大写，保留原始格式（包括连字符、空格等）
                     setPlateNumber(e.target.value)
                   }}
-                  placeholder="请输入或扫描车牌号（支持全球各国格式）"
+                  placeholder="输入车牌号"
                   className="text-lg font-mono tracking-wide"
                   disabled={viewState === "processing"}
                 />

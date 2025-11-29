@@ -117,7 +117,7 @@ export default function VehiclesPage() {
                 // 支持多国车牌格式搜索，不强制转大写
                 setSearchQuery(e.target.value)
               }}
-              placeholder="搜索车牌号（实时搜索，支持全球格式）"
+              placeholder="搜索车牌号"
               className="font-mono text-sm"
             />
             <Button onClick={refresh} disabled={isLoading || isRefreshing} size="sm" variant="outline">

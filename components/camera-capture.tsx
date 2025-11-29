@@ -217,7 +217,7 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
         <div className="relative aspect-video overflow-hidden rounded-lg bg-muted border-2 border-dashed border-muted-foreground/50 flex items-center justify-center">
           <div className="text-center text-muted-foreground">
             <Camera className="mx-auto h-12 w-12 mb-2" />
-            <p className="text-sm">点击下方按钮使用系统相机</p>
+            <p className="text-sm">使用系统相机</p>
             {isIOS && (
               <p className="text-xs mt-1 text-muted-foreground/70">
                 拍照后可使用键盘"扫描文本"识别车牌

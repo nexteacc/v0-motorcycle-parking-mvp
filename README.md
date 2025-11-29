@@ -1,30 +1,64 @@
-# Motorcycle parking MVP
-
-*Automatically synced with your [v0.app](https://v0.app) deployments*
-
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/nexteaccs-projects/v0-motorcycle-parking-mvp)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/otwxC5FY9G0)
-
-## Overview
-
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
-
-## Deployment
-
-Your project is live at:
-
-**[https://vercel.com/nexteaccs-projects/v0-motorcycle-parking-mvp](https://vercel.com/nexteaccs-projects/v0-motorcycle-parking-mvp)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.app/chat/otwxC5FY9G0](https://v0.app/chat/otwxC5FY9G0)**
-
-## How It Works
-
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+开发过程中应该注意的问题
+1. 重构时的全局检查清单
+必须做的：
+修改文件前，先全局搜索该文件中所有使用的组件/函数
+修改后，检查所有导入是否完整
+使用 IDE 的“未使用导入”和“未定义变量”检查
+在修改前后运行 lint 检查
+检查清单：
+□ 修改前：搜索文件中所有使用的组件/函数□ 修改中：确保所有新使用的组件都已导入□ 修改后：检查是否有遗漏的导入□ 验证：运行 lint 和类型检查
+2. 功能开发时的依赖管理
+问题：
+添加新功能时，可能引入新的依赖
+修改现有功能时，可能移除或改变依赖关系
+解决方案：
+使用 TypeScript 严格模式，利用类型检查发现未定义变量
+在 CI/CD 中配置构建前检查（lint、type-check）
+使用 IDE 插件实时提示未导入的组件
+3. 框架版本升级的注意事项
+问题：
+框架 API 可能在不同版本间变化
+使用过时的 API 会导致警告或错误
+解决方案：
+添加功能前，查阅框架最新文档
+关注框架的 breaking changes 和迁移指南
+使用框架提供的类型定义，利用 TypeScript 提示 API 变更
+定期更新依赖，并阅读 changelog
+4. 代码审查和测试流程
+缺失的环节：
+修改后未进行完整的代码审查
+未在本地运行构建检查
+未检查所有相关文件
+应该建立的流程：
+1. 修改代码2. 运行 lint: pnpm lint3. 运行类型检查: pnpm type-check (如果有)4. 运行构建: pnpm build5. 检查是否有警告或错误6. 提交前再次确认
+5. 全局思维 vs 局部思维
+问题：
+只关注直接修改的部分，忽略了文件其他区域
+只关注当前文件，忽略了相关文件
+改进方法：
+修改前：先理解整个文件的结构和依赖关系
+修改中：保持对全局的感知，注意影响范围
+修改后：检查整个文件，确保没有遗漏
+具体改进建议
+1. 建立开发检查清单
+每次修改代码后，执行以下检查：
+□ 所有使用的组件/函数都已导入□ 所有导入的组件/函数都在使用□ 没有 TypeScript 类型错误□ 没有 ESLint 警告□ 本地构建成功（pnpm build）□ 相关文件都已检查
+2. 使用工具自动化检查
+配置 pre-commit hook，提交前自动运行 lint 和类型检查
+使用 IDE 的实时错误提示
+配置 CI/CD 在构建前运行检查
+3. 建立知识更新机制
+添加新功能前，查阅框架最新文档
+关注框架的 breaking changes
+定期更新依赖并测试
+4. 代码审查习惯
+修改后，从头到尾检查整个文件
+使用全局搜索确认所有使用位置
+检查相关文件是否也需要修改
+核心教训
+重构要完整：不仅要改主要逻辑，还要检查所有依赖
+保持知识更新：关注框架 API 变更，查阅最新文档
+建立检查流程：修改后必须运行 lint、类型检查和构建
+全局思维：修改时考虑整个文件和项目的影响
+工具辅助：利用 TypeScript、ESLint 和 IDE 提示
+最重要的是： 不要假设代码是正确的，要用工具和流程来验证。
