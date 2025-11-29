@@ -8,10 +8,10 @@ export function BottomNav() {
   const pathname = usePathname()
 
   const navItems = [
-    { href: "/vehicles", label: "车辆", icon: List },
-    { href: "/entry", label: "入场", icon: LogIn },
-    { href: "/exit", label: "出场", icon: LogOut },
-    { href: "/history", label: "历史", icon: Clock },
+    { href: "/vehicles", label: "Vehicles", icon: List },
+    { href: "/entry", label: "Check In", icon: LogIn },
+    { href: "/exit", label: "Check Out", icon: LogOut },
+    { href: "/history", label: "History", icon: Clock },
   ]
 
   return (

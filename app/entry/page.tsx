@@ -143,7 +143,7 @@ export default function EntryPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error ?? "识别失败，请手动输入")
+        throw new Error(data.error ?? "Recognition failed")
       }
 
       setAnalysisInfo({
@@ -156,7 +156,7 @@ export default function EntryPage() {
         setPlateNumber(data.plateNumber)
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "识别失败，请手动输入"
+      const errorMessage = err instanceof Error ? err.message : "Recognition failed"
       console.error("OCR analysis error:", err)
       setAnalysisError(errorMessage)
     } finally {
@@ -260,7 +260,7 @@ export default function EntryPage() {
     // 支持多国车牌格式，不强制转大写，只去除首尾空格
     const finalPlate = plateNumber.trim()
     if (!finalPlate) {
-      setFormError("请输入车牌号")
+      setFormError("Enter plate number")
       return
     }
 
@@ -312,7 +312,7 @@ export default function EntryPage() {
       setCreatedTicket(data as Ticket)
       setViewState("success")
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "创建入场记录失败")
+      setFormError(err instanceof Error ? err.message : "Failed to create entry record")
     } finally {
       setIsLoading(false)
     }
@@ -342,7 +342,7 @@ export default function EntryPage() {
         }}
       >
         <div className="mx-auto max-w-md px-4 py-3">
-          <h1 className="text-lg font-semibold text-foreground">入场登记</h1>
+          <h1 className="text-lg font-semibold text-foreground">Check In</h1>
         </div>
       </header>
 
@@ -351,7 +351,7 @@ export default function EntryPage() {
         {viewState === "idle" && !photoPreview && (
           <Card>
             <CardHeader>
-              <CardTitle>采集车辆照片</CardTitle>
+              <CardTitle>Capture Photo</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
@@ -361,8 +361,8 @@ export default function EntryPage() {
                     onClick={() => cameraInputRef.current?.click()}
                   >
                     <Camera className="h-8 w-8 text-primary mb-1.5" />
-                    <p className="text-xs font-medium">拍照</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 opacity-0">占位</p>
+                    <p className="text-xs font-medium">Camera</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 opacity-0">Placeholder</p>
                   </div>
                   {/* 隐藏的相机 input - 直接触发系统相机 */}
                   <input
@@ -381,8 +381,8 @@ export default function EntryPage() {
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <ImageIcon className="h-8 w-8 text-primary mb-1.5" />
-                    <p className="text-xs font-medium">上传</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">支持 JPG / PNG</p>
+                    <p className="text-xs font-medium">Upload</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">JPG / PNG</p>
                   </div>
                   <input
                     ref={fileInputRef}
@@ -395,7 +395,7 @@ export default function EntryPage() {
               </div>
 
               <Button variant="ghost" size="sm" className="w-full" onClick={handleManualEntry}>
-                手动登记
+                Manual
               </Button>
             </CardContent>
           </Card>
@@ -406,42 +406,41 @@ export default function EntryPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                识别结果
+                Result
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {photoPreview ? (
                 <div className="relative aspect-video overflow-hidden rounded-xl border bg-muted">
-                  <img src={photoPreview} alt="车辆照片" className="h-full w-full object-cover" />
+                  <img src={photoPreview} alt="Vehicle photo" className="h-full w-full object-cover" />
                   {viewState === "processing" && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 text-sm">
                       <Loader2 className="h-5 w-5 animate-spin mb-2" />
-                      正在识别车牌...
+                      Scanning...
                     </div>
                   )}
                 </div>
               ) : (
                 <div className="aspect-video rounded-xl border border-dashed flex items-center justify-center text-sm text-muted-foreground">
-                  手动输入车牌
+                  Manual
                 </div>
               )}
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">车牌号码</label>
+                <label className="text-sm font-medium text-muted-foreground">Plate</label>
                 <Input
                   ref={plateInputRef}
                   value={plateNumber}
                   onChange={(e) => {
-                    // 支持多国车牌格式，不强制转大写，保留原始格式（包括连字符、空格等）
                     setPlateNumber(e.target.value)
                   }}
-                  placeholder="输入车牌号"
+                  placeholder="Enter license plate"
                   className="text-lg font-mono tracking-wide"
                   disabled={viewState === "processing"}
                 />
                 {analysisInfo.confidence !== null && (
                   <p className="text-xs text-muted-foreground">
-                    AI 置信度：{Math.round((analysisInfo.confidence ?? 0) * 100)}%
+                    Confidence: {Math.round((analysisInfo.confidence ?? 0) * 100)}%
                   </p>
                 )}
                 {analysisError && <p className="text-xs text-destructive">{analysisError}</p>}
@@ -451,7 +450,7 @@ export default function EntryPage() {
 
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={handleRetake} disabled={viewState === "processing"}>
-                  重新开始
+                  Start Over
                 </Button>
                 <Button
                   className="flex-1"
@@ -461,10 +460,10 @@ export default function EntryPage() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      处理中...
+                      Processing...
                     </>
                   ) : (
-                    "确认入场"
+                    "Confirm"
                   )}
                 </Button>
               </div>
@@ -478,23 +477,29 @@ export default function EntryPage() {
               <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                 <Check className="h-6 w-6 text-green-600" />
               </div>
-              <CardTitle className="text-green-700">入场登记成功</CardTitle>
+              <CardTitle className="text-green-700">Success</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <QRCodeDisplay ticket={createdTicket} />
               <div className="rounded-lg bg-white p-4 text-center">
-                <p className="text-sm text-muted-foreground">车牌号码</p>
+                <p className="text-sm text-muted-foreground">Plate</p>
                 <p className="text-2xl font-mono font-bold">{createdTicket.plate_number}</p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  入场时间: {new Date(createdTicket.entry_time).toLocaleString("zh-CN")}
+                  Entry: {new Date(createdTicket.entry_time).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true
+                  })}
                 </p>
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1" asChild>
-                  <Link href="/">返回首页</Link>
+                  <Link href="/">Home</Link>
                 </Button>
                 <Button className="flex-1" onClick={handleNewEntry}>
-                  继续入场
+                  Continue
                 </Button>
               </div>
             </CardContent>
@@ -507,33 +512,39 @@ export default function EntryPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-orange-600">
               <AlertTriangle className="h-5 w-5" />
-              检测到重复入场
+              Duplicate Entry
             </DialogTitle>
             <DialogDescription>
-              车牌 <span className="font-mono font-bold">{plateNumber}</span> 已有未出场记录
+              Plate <span className="font-mono font-bold">{plateNumber}</span> already active
               {duplicateTicket && (
                 <span className="block mt-1">
-                  入场时间: {new Date(duplicateTicket.entry_time).toLocaleString("zh-CN")}
+                  Entry: {new Date(duplicateTicket.entry_time).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true
+                  })}
                 </span>
               )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             <Button variant="outline" onClick={handleViewDuplicate}>
-              查看记录
+              View
             </Button>
             <Button variant="destructive" onClick={handleForceEntry} disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  处理中...
+                  Processing...
                 </>
               ) : (
-                "标记异常并重新入场"
+                "Mark Abnormal"
               )}
             </Button>
             <Button variant="ghost" onClick={() => setShowDuplicateDialog(false)}>
-              取消
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>

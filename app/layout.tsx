@@ -12,14 +12,14 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "摩托车停车管理系统 - 智能停车解决方案",
-  description: "支持车牌识别、二维码扫码、实时追踪的现代化摩托车停车管理平台",
+  title: "Motorcycle Parking Management System - Smart Parking Solution",
+  description: "Modern motorcycle parking management platform with license plate recognition, QR code scanning, and real-time tracking",
   generator: "v0.app",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent", // 全屏模式，状态栏透明，内容延伸到状态栏下方
-    title: "停车管理",
+    statusBarStyle: "black-translucent",
+    title: "Parking",
   },
   icons: {
     icon: [
@@ -58,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased">
         <header 
           className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur-md"

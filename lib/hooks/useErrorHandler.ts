@@ -12,7 +12,7 @@ interface ErrorHandlerReturn {
  * @param defaultMessage 默认错误消息
  * @returns 错误状态和处理方法
  */
-export function useErrorHandler(defaultMessage: string = "操作失败"): ErrorHandlerReturn {
+export function useErrorHandler(defaultMessage: string = "Failed"): ErrorHandlerReturn {
   const [error, setError] = useState<string | null>(null)
 
   const handleError = useCallback(

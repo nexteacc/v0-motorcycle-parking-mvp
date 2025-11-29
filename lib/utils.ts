@@ -34,10 +34,10 @@ export function formatDuration(entryTime: string, exitTime?: string | null): str
  */
 export function getStatusBadgeConfig(status: TicketStatus): { label: string; className: string } {
   const variants: Record<TicketStatus, { label: string; className: string }> = {
-    active: { label: "在场", className: "bg-green-100 text-green-700 hover:bg-green-100" },
-    exited: { label: "已出场", className: "bg-gray-100 text-gray-700 hover:bg-gray-100" },
-    error: { label: "错误", className: "bg-red-100 text-red-700 hover:bg-red-100" },
-    abnormal: { label: "异常", className: "bg-orange-100 text-orange-700 hover:bg-orange-100" },
+    active: { label: "Active", className: "bg-green-100 text-green-700 hover:bg-green-100" },
+    exited: { label: "Exited", className: "bg-gray-100 text-gray-700 hover:bg-gray-100" },
+    error: { label: "Error", className: "bg-red-100 text-red-700 hover:bg-red-100" },
+    abnormal: { label: "Abnormal", className: "bg-orange-100 text-orange-700 hover:bg-orange-100" },
   }
   return variants[status]
 }
@@ -48,10 +48,11 @@ export function getStatusBadgeConfig(status: TicketStatus): { label: string; cla
  * @returns 格式化的日期字符串，如 "1/15 14:30"
  */
 export function formatDateTime(dateString: string): string {
-  return new Date(dateString).toLocaleString("zh-CN", {
-    month: "numeric",
+  return new Date(dateString).toLocaleString("en-US", {
+    month: "short",
     day: "numeric",
-    hour: "2-digit",
+    hour: "numeric",
     minute: "2-digit",
+    hour12: true
   })
 }

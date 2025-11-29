@@ -38,7 +38,7 @@ export default function ExitPage() {
   const deviceId = typeof window !== "undefined" ? localStorage.getItem("device_id") || "unknown" : "unknown"
   
   // 错误处理 Hook
-  const { error, handleError, clearError } = useErrorHandler("操作失败")
+  const { error, handleError, clearError } = useErrorHandler("Failed")
   
   // 搜索防抖：延迟 400ms 执行搜索（出场页面可以稍长一点）
   const debouncedSearchQuery = useDebounce(searchQuery, 400)
@@ -50,7 +50,7 @@ export default function ExitPage() {
         await findTicketById(parsed.id)
       }
     } catch {
-      handleError(new Error("无效的二维码"))
+      handleError(new Error("Invalid QR code"))
     }
   }
 
@@ -69,14 +69,14 @@ export default function ExitPage() {
       if (fetchError) throw fetchError
 
       if (!data) {
-        handleError(new Error("未找到该停车记录"))
+        handleError(new Error("Record not found"))
         return
       }
 
       setSelectedTicket(data as Ticket)
       setMode("confirm")
     } catch (err) {
-      handleError(err, "查询失败")
+      handleError(err, "Query failed")
     } finally {
       setIsLoading(false)
     }
@@ -107,10 +107,10 @@ export default function ExitPage() {
       setSearchResults((data as Ticket[]) || [])
 
       if (!data || data.length === 0) {
-        handleError(new Error("未找到匹配的在场车辆"))
+        handleError(new Error("No matches found"))
       }
     } catch (err) {
-      handleError(err, "搜索失败")
+      handleError(err, "Failed")
       setSearchResults([])
     } finally {
       setIsSearching(false)
@@ -169,7 +169,7 @@ export default function ExitPage() {
       setMode("success")
       clearError()
     } catch (err) {
-      handleError(err, "出场登记失败")
+      handleError(err, "Exit failed")
     } finally {
       setIsLoading(false)
     }
@@ -208,7 +208,7 @@ export default function ExitPage() {
       // Verify can still undo
       const stillCanUndo = await checkCanUndo(exitedTicket.id)
       if (!stillCanUndo) {
-        handleError(new Error("无法撤销：该车牌已有新的入场记录"))
+        handleError(new Error("Cannot undo: This license plate has a new entry record"))
         setCanUndo(false)
         setShowUndoDialog(false)
         return
@@ -241,7 +241,7 @@ export default function ExitPage() {
       setMode("confirm")
       clearError()
     } catch (err) {
-      handleError(err, "撤销失败")
+      handleError(err, "Undo failed")
     } finally {
       setIsLoading(false)
     }
@@ -279,7 +279,7 @@ export default function ExitPage() {
             if (code) {
               handleQRScan(code.data)
             } else {
-              handleError(new Error("无法识别二维码，请确保图片清晰"))
+              handleError(new Error("QR code not recognized"))
             }
           }
         }
@@ -299,7 +299,7 @@ export default function ExitPage() {
         }}
       >
         <div className="mx-auto max-w-md px-4 py-3">
-          <h1 className="text-lg font-semibold text-foreground">出场登记</h1>
+          <h1 className="text-lg font-semibold text-foreground">Check Out</h1>
         </div>
       </header>
 
@@ -307,7 +307,7 @@ export default function ExitPage() {
         {mode === "select" && (
           <Card>
             <CardHeader>
-              <CardTitle>选择出场方式</CardTitle>
+              <CardTitle>Select Method</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
@@ -317,8 +317,8 @@ export default function ExitPage() {
                     onClick={() => setMode("qr-scan")}
                   >
                     <QrCode className="h-8 w-8 text-primary mb-1.5" />
-                    <p className="text-xs font-medium">扫描二维码</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 opacity-0">占位</p>
+                    <p className="text-xs font-medium">Scan QR Code</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 opacity-0">Placeholder</p>
                   </div>
                 </div>
 
@@ -328,15 +328,15 @@ export default function ExitPage() {
                     onClick={() => setMode("upload-scan")}
                   >
                     <ImageIcon className="h-8 w-8 text-primary mb-1.5" />
-                    <p className="text-xs font-medium">上传图片</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">支持 JPG / PNG</p>
+                    <p className="text-xs font-medium">Upload</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">JPG / PNG</p>
                   </div>
                 </div>
               </div>
 
               <Button variant="ghost" size="sm" className="w-full" onClick={() => setMode("search")}>
                 <Search className="mr-2 h-4 w-4" />
-                搜索
+                Search
               </Button>
             </CardContent>
           </Card>
@@ -352,7 +352,7 @@ export default function ExitPage() {
                   onClick={() => setMode("qr-scan")}
                 >
                   <QrCode className="mr-2 h-4 w-4" />
-                  扫描二维码
+                  Scan QR
                 </Button>
                 <Button
                   variant={mode === "upload-scan" ? "default" : "outline"}
@@ -360,7 +360,7 @@ export default function ExitPage() {
                   onClick={() => setMode("upload-scan")}
                 >
                   <ImageIcon className="mr-2 h-4 w-4" />
-                  上传图片
+                  Upload
                 </Button>
               </div>
             )}
@@ -370,7 +370,7 @@ export default function ExitPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <QrCode className="h-5 w-5" />
-                    扫描二维码
+                    Scan QR
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -378,11 +378,11 @@ export default function ExitPage() {
                   {isLoading && (
                     <div className="mt-4 flex items-center justify-center gap-2 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>正在查询...</span>
+                      <span>Loading...</span>
                     </div>
                   )}
                   <Button variant="outline" className="w-full mt-4" onClick={() => setMode("select")}>
-                    返回选择
+                    Back
                   </Button>
                 </CardContent>
               </Card>
@@ -393,7 +393,7 @@ export default function ExitPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ImageIcon className="h-5 w-5" />
-                    上传二维码
+                    Upload QR
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -415,13 +415,13 @@ export default function ExitPage() {
                   >
                     <div className="text-center">
                       <ImageIcon className="mx-auto h-12 w-12 mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">上传二维码</p>
+                      <p className="text-sm text-muted-foreground">Upload QR</p>
                     </div>
                   </div>
                   {isLoading && (
                     <div className="flex items-center justify-center gap-2 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>正在识别...</span>
+                      <span>Recognizing...</span>
                     </div>
                   )}
                   {error && <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>}
@@ -433,7 +433,7 @@ export default function ExitPage() {
                       setMode("select")
                     }}
                   >
-                    返回选择
+                    Back
                   </Button>
                 </CardContent>
               </Card>
@@ -444,7 +444,7 @@ export default function ExitPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Search className="h-5 w-5" />
-                    搜索
+                    Search
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -452,11 +452,10 @@ export default function ExitPage() {
                     <Input
                       value={searchQuery}
                       onChange={(e) => {
-                        // 支持多国车牌格式搜索，不强制转大写
                         setSearchQuery(e.target.value)
                         clearError()
                       }}
-                      placeholder="输入车牌号"
+                      placeholder="Enter plate"
                       className="font-mono"
                     />
                     <Button onClick={handleSearch} disabled={isSearching} variant="outline">
@@ -471,7 +470,7 @@ export default function ExitPage() {
 
                   {searchResults.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">找到 {searchResults.length} 条记录</p>
+                      <p className="text-sm text-muted-foreground">Found {searchResults.length}</p>
                       {searchResults.map((ticket) => (
                         <button
                           key={ticket.id}
@@ -483,7 +482,13 @@ export default function ExitPage() {
                             <span className="text-sm text-muted-foreground">{formatDuration(ticket.entry_time)}</span>
                           </div>
                           <p className="mt-1 text-sm text-muted-foreground">
-                            入场: {new Date(ticket.entry_time).toLocaleString("zh-CN")}
+                            {new Date(ticket.entry_time).toLocaleString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true
+                            })}
                           </p>
                         </button>
                       ))}
@@ -502,14 +507,14 @@ export default function ExitPage() {
         {mode === "confirm" && selectedTicket && (
           <Card>
             <CardHeader>
-              <CardTitle>确认出场信息</CardTitle>
+              <CardTitle>Confirm Exit</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {selectedTicket.photo_url && (
                 <div className="relative aspect-video overflow-hidden rounded-xl border bg-muted">
                   <img
                     src={selectedTicket.photo_url || "/placeholder.svg"}
-                    alt="车辆照片"
+                    alt="Vehicle photo"
                     className="h-full w-full object-cover"
                   />
                 </div>
@@ -517,17 +522,23 @@ export default function ExitPage() {
 
               <div className="rounded-lg bg-muted/50 p-4 space-y-3">
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground">车牌号码</p>
+                  <p className="text-sm text-muted-foreground">Plate</p>
                   <p className="text-2xl font-mono font-bold">{selectedTicket.plate_number}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground">入场时间</p>
-                    <p className="font-medium">{new Date(selectedTicket.entry_time).toLocaleString("zh-CN")}</p>
+                    <p className="text-muted-foreground">Entry</p>
+                    <p className="font-medium">{new Date(selectedTicket.entry_time).toLocaleString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true
+                    })}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">停车时长</p>
+                    <p className="text-muted-foreground">Time</p>
                     <p className="font-medium flex items-center gap-1">
                       <Clock className="h-4 w-4" />
                       {formatDuration(selectedTicket.entry_time)}
@@ -537,7 +548,7 @@ export default function ExitPage() {
 
                 {selectedTicket.status !== "active" && (
                   <div className="rounded bg-orange-100 p-2 text-center text-sm text-orange-700">
-                    状态: {selectedTicket.status === "exited" ? "已出场" : selectedTicket.status}
+                    Status: {selectedTicket.status === "exited" ? "Exited" : selectedTicket.status}
                   </div>
                 )}
               </div>
@@ -546,7 +557,7 @@ export default function ExitPage() {
 
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={handleNewExit}>
-                  取消
+                  Cancel
                 </Button>
                 <Button
                   className="flex-1"
@@ -556,10 +567,10 @@ export default function ExitPage() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      处理中...
+                      Processing...
                     </>
                   ) : (
-                    "确认出场"
+                    "Confirm Exit"
                   )}
                 </Button>
               </div>
@@ -573,30 +584,36 @@ export default function ExitPage() {
               <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                 <Check className="h-6 w-6 text-green-600" />
               </div>
-              <CardTitle className="text-green-700">出场登记成功</CardTitle>
+              <CardTitle className="text-green-700">Success</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-lg bg-white p-4 text-center">
-                <p className="text-sm text-muted-foreground">车牌号码</p>
+                <p className="text-sm text-muted-foreground">Plate</p>
                 <p className="text-2xl font-mono font-bold">{exitedTicket.plate_number}</p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  出场时间: {exitedTicket.exit_time ? new Date(exitedTicket.exit_time).toLocaleString("zh-CN") : "-"}
+                  Exit: {exitedTicket.exit_time ? new Date(exitedTicket.exit_time).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true
+                  }) : "-"}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  停车时长: {formatDuration(exitedTicket.entry_time, exitedTicket.exit_time)}
+                  Duration: {formatDuration(exitedTicket.entry_time, exitedTicket.exit_time)}
                 </p>
               </div>
               
               {canUndo && (
                 <Button variant="outline" className="w-full" onClick={() => setShowUndoDialog(true)}>
                   <Undo2 className="mr-2 h-4 w-4" />
-                  撤销出场
+                  Undo Exit
                 </Button>
               )}
               
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={() => setMode("select")}>
-                  继续出场
+                  Continue
                 </Button>
               </div>
             </CardContent>
@@ -608,26 +625,26 @@ export default function ExitPage() {
       <Dialog open={showUndoDialog} onOpenChange={setShowUndoDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>确认撤销出场</DialogTitle>
+            <DialogTitle>Undo Exit</DialogTitle>
             <DialogDescription>
-              撤销后，车牌 <span className="font-mono font-bold">{exitedTicket?.plate_number}</span> 将恢复为在场状态。
+              Plate <span className="font-mono font-bold">{exitedTicket?.plate_number}</span> will be restored to active.
               <br />
-              此操作会被记录到系统日志中。
+              This will be logged.
             </DialogDescription>
           </DialogHeader>
           {error && <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>}
           <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button variant="outline" onClick={() => setShowUndoDialog(false)}>
-              取消
+              Cancel
             </Button>
             <Button variant="destructive" onClick={handleUndo} disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  处理中...
+                  Processing...
                 </>
               ) : (
-                "确认撤销"
+                "Undo"
               )}
             </Button>
           </DialogFooter>

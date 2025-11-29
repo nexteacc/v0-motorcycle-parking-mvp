@@ -48,7 +48,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         .single()
 
       if (fetchError) {
-        setError("未找到该停车记录")
+        setError("Record not found")
       } else {
         setTicket(data as Ticket)
         setEditedPlate(data.plate_number)
@@ -61,7 +61,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
   const handleEditPlate = () => {
     if (ticket?.plate_modified) {
-      setError("车牌号只能修改一次")
+      setError("Plate can only be modified once")
       return
     }
     setIsEditingPlate(true)
@@ -105,7 +105,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
       })
       setIsEditingPlate(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "修改车牌失败")
+      setError(err instanceof Error ? err.message : "Update failed")
     } finally {
       setIsSavingPlate(false)
     }
@@ -148,7 +148,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
       setTicket(data as Ticket)
       setShowExitDialog(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "出场登记失败")
+      setError(err instanceof Error ? err.message : "Check out failed")
     } finally {
       setIsExiting(false)
     }
@@ -163,17 +163,17 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
 
     if (hours > 0) {
-      return `${hours}小时${minutes}分钟`
+      return `${hours}h ${minutes}m`
     }
-    return `${minutes}分钟`
+    return `${minutes}m`
   }
 
   const getStatusBadge = (status: TicketStatus) => {
     const variants: Record<TicketStatus, { label: string; className: string }> = {
-      active: { label: "在场", className: "bg-green-100 text-green-700" },
-      exited: { label: "已出场", className: "bg-gray-100 text-gray-700" },
-      error: { label: "错误", className: "bg-red-100 text-red-700" },
-      abnormal: { label: "异常", className: "bg-orange-100 text-orange-700" },
+      active: { label: "Active", className: "bg-green-100 text-green-700" },
+      exited: { label: "Exited", className: "bg-gray-100 text-gray-700" },
+      error: { label: "Error", className: "bg-red-100 text-red-700" },
+      abnormal: { label: "Abnormal", className: "bg-orange-100 text-orange-700" },
     }
     const { label, className } = variants[status]
     return (
@@ -202,15 +202,15 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
               </Link>
-              <h1 className="text-lg font-semibold">停车详情</h1>
+              <h1 className="text-lg font-semibold">Details</h1>
             </div>
           </div>
         </header>
         <main className="container mx-auto px-4 py-12 text-center">
           <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground/50 mb-2" />
-          <p className="text-muted-foreground">{error || "未找到该停车记录"}</p>
+          <p className="text-muted-foreground">{error || "Record not found"}</p>
           <Button className="mt-4" asChild>
-            <Link href="/vehicles">返回列表</Link>
+            <Link href="/vehicles">Back</Link>
           </Button>
         </main>
       </div>
@@ -233,7 +233,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
               </Link>
-              <h1 className="text-lg font-semibold">停车详情</h1>
+              <h1 className="text-lg font-semibold">Details</h1>
             </div>
             {getStatusBadge(ticket.status)}
           </div>
@@ -248,7 +248,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
               <div className="aspect-video overflow-hidden rounded-lg">
                 <img
                   src={ticket.photo_url || "/placeholder.svg"}
-                  alt="车辆照片"
+                  alt="Vehicle photo"
                   className="h-full w-full object-cover"
                 />
               </div>
@@ -259,7 +259,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         {/* Plate Number */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">车牌号码</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Plate</CardTitle>
           </CardHeader>
           <CardContent>
             {isEditingPlate ? (
@@ -291,7 +291,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
               </div>
             )}
             {ticket.plate_modified && ticket.original_plate_number && (
-              <p className="mt-2 text-xs text-muted-foreground">原车牌: {ticket.original_plate_number}</p>
+              <p className="mt-2 text-xs text-muted-foreground">Original: {ticket.original_plate_number}</p>
             )}
           </CardContent>
         </Card>
@@ -302,25 +302,37 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="h-4 w-4" />
-                <span className="text-sm">入场时间</span>
+                <span className="text-sm">Entry</span>
               </div>
-              <span className="font-medium">{new Date(ticket.entry_time).toLocaleString("zh-CN")}</span>
+              <span className="font-medium">{new Date(ticket.entry_time).toLocaleString("en-US", {
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true
+              })}</span>
             </div>
 
             {ticket.exit_time && (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  <span className="text-sm">出场时间</span>
+                  <span className="text-sm">Exit</span>
                 </div>
-                <span className="font-medium">{new Date(ticket.exit_time).toLocaleString("zh-CN")}</span>
+                <span className="font-medium">{new Date(ticket.exit_time).toLocaleString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true
+                })}</span>
               </div>
             )}
 
             <div className="flex items-center justify-between pt-2 border-t">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4" />
-                <span className="text-sm">停车时长</span>
+                <span className="text-sm">Time</span>
               </div>
               <span className="font-semibold text-lg">{formatDuration(ticket.entry_time, ticket.exit_time)}</span>
             </div>
@@ -331,7 +343,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         {ticket.status === "active" && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-center text-sm font-medium text-muted-foreground">停车票二维码</CardTitle>
+              <CardTitle className="text-center text-sm font-medium text-muted-foreground">QR Code</CardTitle>
             </CardHeader>
             <CardContent>
               <QRCodeDisplay ticket={ticket} />
@@ -343,7 +355,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         {ticket.device_id && (
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
             <Smartphone className="h-3 w-3" />
-            <span>设备: {ticket.device_id.slice(0, 20)}...</span>
+            <span>Device: {ticket.device_id.slice(0, 20)}...</span>
           </div>
         )}
 
@@ -354,7 +366,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         {ticket.status === "active" && (
           <Button className="w-full bg-orange-600 hover:bg-orange-700" onClick={() => setShowExitDialog(true)}>
             <LogOut className="mr-2 h-4 w-4" />
-            确认出场
+            Confirm Exit
           </Button>
         )}
       </main>
@@ -363,25 +375,25 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
       <Dialog open={showExitDialog} onOpenChange={setShowExitDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>确认出场</DialogTitle>
+            <DialogTitle>Confirm Exit</DialogTitle>
             <DialogDescription>
-              确认车牌 <span className="font-mono font-bold">{ticket.plate_number}</span> 出场？
+              Exit plate <span className="font-mono font-bold">{ticket.plate_number}</span>?
               <br />
-              停车时长: {formatDuration(ticket.entry_time)}
+              {formatDuration(ticket.entry_time)}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button variant="outline" onClick={() => setShowExitDialog(false)}>
-              取消
+              Cancel
             </Button>
             <Button className="bg-orange-600 hover:bg-orange-700" onClick={handleConfirmExit} disabled={isExiting}>
               {isExiting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  处理中...
+                  Processing...
                 </>
               ) : (
-                "确认出场"
+                "Confirm Exit"
               )}
             </Button>
           </DialogFooter>

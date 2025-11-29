@@ -54,8 +54,8 @@ export default function HistoryPage() {
       // 刷新列表
       await refresh()
     } catch (err) {
-      console.error("删除失败:", err)
-      alert("删除失败，请重试")
+      console.error("Delete failed:", err)
+      alert("Delete failed, please try again")
     } finally {
       setDeletingIds((prev) => {
         const next = new Set(prev)
@@ -80,7 +80,7 @@ export default function HistoryPage() {
       >
         <div className="mx-auto max-w-md px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-semibold text-foreground">历史记录</h1>
+            <h1 className="text-lg font-semibold text-foreground">History</h1>
             <Button variant="ghost" size="icon" onClick={refresh} disabled={isRefreshing}>
               <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} />
             </Button>
@@ -97,11 +97,11 @@ export default function HistoryPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">全部记录</SelectItem>
-              <SelectItem value="exited">已出场</SelectItem>
-              <SelectItem value="active">在场</SelectItem>
-              <SelectItem value="abnormal">异常</SelectItem>
-              <SelectItem value="error">错误</SelectItem>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="exited">Exited</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="abnormal">Abnormal</SelectItem>
+              <SelectItem value="error">Error</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -120,7 +120,7 @@ export default function HistoryPage() {
         ) : tickets.length === 0 ? (
           <div className="text-center py-12">
             <Clock className="mx-auto h-12 w-12 text-muted-foreground/50 mb-2" />
-            <p className="text-muted-foreground text-sm">暂无历史记录</p>
+            <p className="text-muted-foreground text-sm">No records</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -130,7 +130,7 @@ export default function HistoryPage() {
                 onDelete={() => handleDelete(ticket.id)}
                 onTap={() => handleCardTap(ticket.id)}
                 disabled={deletingIds.has(ticket.id)}
-                deleteLabel={deletingIds.has(ticket.id) ? "删除中..." : "删除"}
+                deleteLabel={deletingIds.has(ticket.id) ? "Deleting..." : "Delete"}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">

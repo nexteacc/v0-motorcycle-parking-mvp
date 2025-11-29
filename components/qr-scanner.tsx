@@ -83,20 +83,20 @@ export function QRScanner({ onScan }: QRScannerProps) {
       }
     } catch (err: any) {
       console.error("Camera error:", err)
-      let errorMessage = "无法访问摄像头"
+      let errorMessage = "Unable to access camera"
       
       if (err?.name === "NotAllowedError" || err?.name === "PermissionDismissedError") {
-        errorMessage = "摄像头权限被拒绝，请在浏览器设置中允许摄像头访问"
+        errorMessage = "Camera permission denied, please allow camera access in browser settings"
       } else if (err?.name === "NotFoundError" || err?.name === "DevicesNotFoundError") {
-        errorMessage = "未找到摄像头设备"
+        errorMessage = "Camera device not found"
       } else if (err?.name === "NotReadableError" || err?.name === "TrackStartError") {
-        errorMessage = "摄像头被其他应用占用，请关闭其他应用后重试"
+        errorMessage = "Camera is being used by another app, please close other apps and try again"
       } else if (err?.name === "OverconstrainedError") {
-        errorMessage = "摄像头不支持所需设置"
+        errorMessage = "Camera does not support required settings"
       } else if (err?.message) {
-        errorMessage = `摄像头错误：${err.message}`
+        errorMessage = `Camera error: ${err.message}`
       } else {
-        errorMessage = "无法访问摄像头，请检查权限设置"
+        errorMessage = "Unable to access camera, please check permission settings"
       }
       
       setError(errorMessage)
@@ -134,7 +134,7 @@ export function QRScanner({ onScan }: QRScannerProps) {
           <div className="absolute inset-0 flex items-center justify-center bg-muted">
             <div className="text-center text-muted-foreground">
               <Loader2 className="mx-auto h-12 w-12 mb-2 animate-spin" />
-              <p>正在启动摄像头...</p>
+              <p>Starting...</p>
             </div>
           </div>
         )}
@@ -149,7 +149,7 @@ export function QRScanner({ onScan }: QRScannerProps) {
         )}
       </div>
 
-      <p className="text-center text-sm text-muted-foreground">将二维码对准扫描框内</p>
+      <p className="text-center text-sm text-muted-foreground">Align QR code</p>
     </div>
   )
 }

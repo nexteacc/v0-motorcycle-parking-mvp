@@ -18,7 +18,7 @@ export function SwipeableCard({
   onDelete,
   onTap,
   disabled = false,
-  deleteLabel = "删除",
+  deleteLabel = "Delete",
 }: SwipeableCardProps) {
   const [translateX, setTranslateX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)

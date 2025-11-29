@@ -86,9 +86,9 @@ export function PWAInstaller() {
       <div className="rounded-lg border bg-card p-4 shadow-lg">
         <div className="flex items-start gap-3">
           <div className="flex-1">
-            <h3 className="font-semibold text-sm mb-1">安装应用</h3>
+            <h3 className="font-semibold text-sm mb-1">Install</h3>
             <p className="text-xs text-muted-foreground">
-              将应用添加到主屏幕，获得更好的使用体验和离线访问能力
+              Add to home screen for better experience
             </p>
           </div>
           <Button
@@ -107,14 +107,14 @@ export function PWAInstaller() {
             onClick={handleInstallClick}
           >
             <Download className="mr-2 h-4 w-4" />
-            安装
+            Install
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={handleDismiss}
           >
-            稍后
+            Later
           </Button>
         </div>
       </div>

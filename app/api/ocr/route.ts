@@ -10,22 +10,22 @@ const RESPONSE_SCHEMA = {
   properties: {
     plate_number: {
       type: ["string", "null"],
-      description: "识别到的车牌号",
+      description: "Recognized license plate number",
     },
     confidence: {
       type: ["number", "null"],
-      description: "置信度 0-1",
+      description: "Confidence 0-1",
     },
     color: {
       type: ["string", "null"],
-      description: "车辆颜色",
+      description: "Vehicle color",
     },
   },
   required: ["plate_number", "confidence", "color"],
   additionalProperties: false,
 } as const
 
-const PROMPT = `从车辆照片中识别车牌号。如果可以识别，返回完整车牌号（保持原始格式）；无法识别则返回 null。confidence 表示置信度（0-1），无法识别时为 0。color 返回 null。仅输出 JSON。`
+const PROMPT = `Identify the license plate number from the vehicle photo. If recognizable, return the complete license plate number (maintain original format); if not recognizable, return null. confidence represents confidence (0-1), 0 if not recognizable. color returns null. Output JSON only.`
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
           plateNumber: null, 
           confidence: null, 
           color: null, 
-          error: "服务器配置错误：缺少 OpenAI API 密钥" 
+          error: "Server configuration error: Missing OpenAI API key" 
         }, 
         { status: 500 }
       )
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
           plateNumber: null, 
           confidence: null, 
           color: null, 
-          error: "请求格式错误：无法解析请求数据" 
+          error: "Request format error: Unable to parse request data" 
         }, 
         { status: 400 }
       )
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
           plateNumber: null, 
           confidence: null, 
           color: null, 
-          error: "图片数据缺失，请重新上传图片" 
+          error: "Image data missing, please upload image again" 
         }, 
         { status: 400 }
       )
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
           plateNumber: null, 
           confidence: null, 
           color: null, 
-          error: "图片数据无效，请重新上传" 
+          error: "Invalid image data, please upload again" 
         }, 
         { status: 400 }
       )
@@ -124,15 +124,15 @@ export async function POST(request: NextRequest) {
         code: apiError?.code,
       })
       
-      let errorMessage = "AI 识别服务暂时不可用，请稍后重试"
+      let errorMessage = "AI recognition service temporarily unavailable, please try again later"
       if (apiError?.status === 401) {
-        errorMessage = "API 密钥无效，请联系管理员"
+        errorMessage = "Invalid API key, please contact administrator"
       } else if (apiError?.status === 429) {
-        errorMessage = "请求过于频繁，请稍后再试"
+        errorMessage = "Too many requests, please try again later"
       } else if (apiError?.status === 500 || apiError?.status === 503) {
-        errorMessage = "AI 服务暂时不可用，请稍后重试"
+        errorMessage = "AI service temporarily unavailable, please try again later"
       } else if (apiError?.message) {
-        errorMessage = `识别失败：${apiError.message}`
+        errorMessage = `Recognition failed: ${apiError.message}`
       }
       
       return NextResponse.json(
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
           plateNumber: null, 
           confidence: null, 
           color: null, 
-          error: "未获取到识别结果，请重新尝试" 
+          error: "No recognition result obtained, please try again" 
         },
         { status: 200 }
       )
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
           plateNumber: null, 
           confidence: null, 
           color: null, 
-          error: "未获取到识别结果，请重新尝试" 
+          error: "No recognition result obtained, please try again" 
         },
         { status: 200 }
       )
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
           plateNumber: null, 
           confidence: null, 
           color: null, 
-          error: "识别结果格式错误，请重新尝试" 
+          error: "Recognition result format error, please try again" 
         },
         { status: 200 }
       )
@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
         plateNumber: null, 
         confidence: null, 
         color: null, 
-        error: error?.message || "服务器内部错误，请稍后重试" 
+        error: error?.message || "Internal server error, please try again later" 
       }, 
       { status: 500 }
     )
