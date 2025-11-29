@@ -28,7 +28,7 @@ export function SwipeableCard({
   const isDraggingRef = useRef(false)
   const hasMovedRef = useRef(false)
 
-  const DELETE_BUTTON_WIDTH = 80 // 删除按钮宽度
+  const DELETE_BUTTON_WIDTH = 60 // 删除按钮宽度（仅图标，更紧凑）
   const SWIPE_THRESHOLD = 30 // 滑动阈值，超过这个值才认为是滑动
 
   useEffect(() => {
@@ -37,7 +37,12 @@ export function SwipeableCard({
 
     const handleTouchStart = (e: TouchEvent) => {
       if (disabled) return
-      startXRef.current = e.touches[0].clientX
+      // 阻止事件冒泡，避免触发父元素的点击事件
+      e.stopPropagation()
+      const touch = e.touches[0]
+      if (!touch) return
+      
+      startXRef.current = touch.clientX
       currentXRef.current = startXRef.current
       isDraggingRef.current = false
       hasMovedRef.current = false
@@ -45,7 +50,10 @@ export function SwipeableCard({
 
     const handleTouchMove = (e: TouchEvent) => {
       if (disabled) return
-      currentXRef.current = e.touches[0].clientX
+      const touch = e.touches[0]
+      if (!touch) return
+      
+      currentXRef.current = touch.clientX
       const deltaX = currentXRef.current - startXRef.current
 
       // 只允许向左滑动（负值）
@@ -57,15 +65,19 @@ export function SwipeableCard({
         const maxTranslate = -DELETE_BUTTON_WIDTH
         const newTranslateX = Math.max(maxTranslate, deltaX)
         setTranslateX(newTranslateX)
+        
+        // 阻止默认滚动行为
+        e.preventDefault()
       } else if (translateX < 0) {
         // 如果已经滑出，允许向右滑动恢复
         const newTranslateX = Math.min(0, translateX + deltaX)
         setTranslateX(newTranslateX)
         hasMovedRef.current = true
+        e.preventDefault()
       }
     }
 
-    const handleTouchEnd = () => {
+    const handleTouchEnd = (e: TouchEvent) => {
       if (disabled) return
 
       const deltaX = currentXRef.current - startXRef.current
@@ -94,8 +106,9 @@ export function SwipeableCard({
       isDraggingRef.current = false
     }
 
-    card.addEventListener("touchstart", handleTouchStart, { passive: true })
-    card.addEventListener("touchmove", handleTouchMove, { passive: true })
+    // 使用 { passive: false } 以便可以调用 preventDefault
+    card.addEventListener("touchstart", handleTouchStart, { passive: false })
+    card.addEventListener("touchmove", handleTouchMove, { passive: false })
     card.addEventListener("touchend", handleTouchEnd, { passive: true })
 
     return () => {
@@ -132,13 +145,13 @@ export function SwipeableCard({
       >
         <Button
           variant="destructive"
-          size="sm"
+          size="icon"
           onClick={handleDelete}
           disabled={isDeleting}
-          className="h-8"
+          className="h-8 w-8"
+          title={deleteLabel}
         >
-          <Trash2 className="h-4 w-4 mr-1" />
-          {deleteLabel}
+          <Trash2 className="h-4 w-4" />
         </Button>
       </div>
 
@@ -148,17 +161,36 @@ export function SwipeableCard({
         className="relative transition-transform duration-200 ease-out"
         style={{
           transform: `translateX(${translateX}px)`,
-          touchAction: "pan-x",
+          touchAction: "pan-x pan-y", // 允许水平和垂直滑动
+          WebkitTouchCallout: "none", // 禁用 iOS 长按菜单
+          WebkitUserSelect: "none", // 禁用文本选择
+          userSelect: "none",
         }}
-        onClick={() => {
+        onClick={(e) => {
           // 如果已经滑出，点击卡片区域时恢复
           if (translateX < 0) {
+            e.stopPropagation()
             handleReset()
           }
         }}
       >
-        <Card className="transition-all hover:shadow-md hover:border-primary/50">
-          <CardContent className="py-3">{children}</CardContent>
+        <Card 
+          className="transition-all hover:shadow-md hover:border-primary/50"
+          style={{
+            touchAction: "pan-x pan-y",
+            WebkitTouchCallout: "none",
+            WebkitUserSelect: "none",
+            userSelect: "none",
+          }}
+        >
+          <CardContent 
+            className="py-3"
+            style={{
+              touchAction: "pan-x pan-y",
+            }}
+          >
+            {children}
+          </CardContent>
         </Card>
       </div>
     </div>

@@ -1,6 +1,6 @@
 // Service Worker for PWA
-const CACHE_NAME = 'motorcycle-parking-v1'
-const RUNTIME_CACHE = 'motorcycle-parking-runtime-v1'
+const CACHE_NAME = 'motorcycle-parking-v2' // 更新版本号以强制刷新缓存
+const RUNTIME_CACHE = 'motorcycle-parking-runtime-v2'
 
 // 需要缓存的静态资源
 const STATIC_ASSETS = [

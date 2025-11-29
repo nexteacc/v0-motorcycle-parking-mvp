@@ -312,33 +312,24 @@ export default function ExitPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border bg-card p-3">
-                  <div>
+                  <div
+                    className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors min-h-[120px]"
+                    onClick={() => setMode("qr-scan")}
+                  >
+                    <QrCode className="h-8 w-8 text-primary mb-1.5" />
                     <p className="text-xs font-medium">扫描二维码</p>
-                  </div>
-                  <div className="mt-3">
-                    <div
-                      className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors"
-                      onClick={() => setMode("qr-scan")}
-                    >
-                      <QrCode className="h-8 w-8 text-primary mb-1.5" />
-                      <p className="text-xs font-medium">扫描</p>
-                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 opacity-0">占位</p>
                   </div>
                 </div>
 
                 <div className="rounded-xl border bg-card p-3">
-                  <div>
+                  <div
+                    className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors min-h-[120px]"
+                    onClick={() => setMode("upload-scan")}
+                  >
+                    <ImageIcon className="h-8 w-8 text-primary mb-1.5" />
                     <p className="text-xs font-medium">上传图片</p>
-                  </div>
-                  <div className="mt-3">
-                    <div
-                      className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors"
-                      onClick={() => setMode("upload-scan")}
-                    >
-                      <ImageIcon className="h-8 w-8 text-primary mb-1.5" />
-                      <p className="text-xs font-medium">上传</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">支持 JPG / PNG</p>
-                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">支持 JPG / PNG</p>
                   </div>
                 </div>
               </div>

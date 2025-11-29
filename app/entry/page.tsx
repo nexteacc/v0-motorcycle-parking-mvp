@@ -356,50 +356,41 @@ export default function EntryPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border bg-card p-3">
-                  <div>
+                  <div
+                    className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors min-h-[120px]"
+                    onClick={() => cameraInputRef.current?.click()}
+                  >
+                    <Camera className="h-8 w-8 text-primary mb-1.5" />
                     <p className="text-xs font-medium">拍照</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 opacity-0">占位</p>
                   </div>
-                  <div className="mt-3">
-                    <div
-                      className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors"
-                      onClick={() => cameraInputRef.current?.click()}
-                    >
-                      <Camera className="h-8 w-8 text-primary mb-1.5" />
-                      <p className="text-xs font-medium">拍照</p>
-                    </div>
-                    {/* 隐藏的相机 input - 直接触发系统相机 */}
-                    <input
-                      ref={cameraInputRef}
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      className="hidden"
-                      onChange={handleNativeCamera}
-                    />
-                  </div>
+                  {/* 隐藏的相机 input - 直接触发系统相机 */}
+                  <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleNativeCamera}
+                  />
                 </div>
 
                 <div className="rounded-xl border bg-card p-3">
-                  <div>
-                    <p className="text-xs font-medium">上传图片</p>
+                  <div
+                    className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors min-h-[120px]"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <ImageIcon className="h-8 w-8 text-primary mb-1.5" />
+                    <p className="text-xs font-medium">上传</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">支持 JPG / PNG</p>
                   </div>
-                  <div className="mt-3">
-                    <div
-                      className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <ImageIcon className="h-8 w-8 text-primary mb-1.5" />
-                      <p className="text-xs font-medium">上传</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">支持 JPG / PNG</p>
-                    </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleUploadImage}
-                    />
-                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleUploadImage}
+                  />
                 </div>
               </div>
 
