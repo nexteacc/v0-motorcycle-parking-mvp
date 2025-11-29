@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Camera, Edit2, Check, X, AlertTriangle, Loader2, ImageIcon } from "lucide-react"
@@ -41,6 +41,31 @@ export default function EntryPage() {
   const [duplicateTicket, setDuplicateTicket] = useState<Ticket | null>(null)
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false)
 
+  const [isIOS, setIsIOS] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const isIOSDevice = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase())
+    setIsIOS(isIOSDevice)
+    
+    // iOS 用户直接进入快速模式（跳过选择步骤）
+    if (isIOSDevice && step === "select") {
+      setStep("confirm")
+      setIsEditing(true)
+    }
+  }, [])
+
+  // iOS 用户进入确认页面时自动聚焦（仅当没有车牌号时）
+  useEffect(() => {
+    if (isIOS && step === "confirm" && inputRef.current && !plateNumber && !editedPlate) {
+      // 延迟聚焦，确保 DOM 已渲染
+      const timer = setTimeout(() => {
+        inputRef.current?.focus()
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [isIOS, step, plateNumber, editedPlate])
+
   const deviceId = typeof window !== "undefined" ? localStorage.getItem("device_id") || generateDeviceId() : "unknown"
 
   function generateDeviceId() {
@@ -53,6 +78,15 @@ export default function EntryPage() {
 
   const handlePhotoCapture = async (imageDataUrl: string) => {
     setPhotoUrl(imageDataUrl)
+    
+    // iOS 用户：如果已经手动输入了车牌，拍照只是补充照片，不触发 OCR
+    if (isIOS && plateNumber && plateNumber.trim() !== "") {
+      setStep("confirm")
+      // iOS 用户拍照后不自动聚焦输入框，因为车牌已经填好了
+      return
+    }
+
+    // 非 iOS 用户或首次拍照：调用 OCR
     setIsOcrLoading(true)
     setError(null)
 
@@ -77,12 +111,23 @@ export default function EntryPage() {
       }
 
       setStep("confirm")
+      // 非 iOS 用户 OCR 后，如果是首次输入，自动聚焦输入框方便编辑
+      if (!isIOS && !data.plateNumber) {
+        setTimeout(() => {
+          inputRef.current?.focus()
+        }, 200)
+      }
     } catch {
       setError("OCR识别失败，请手动输入车牌号")
       setPlateNumber("")
       setEditedPlate("")
       setIsEditing(true)
       setStep("confirm")
+      if (!isIOS) {
+        setTimeout(() => {
+          inputRef.current?.focus()
+        }, 200)
+      }
     } finally {
       setIsOcrLoading(false)
     }
@@ -234,6 +279,28 @@ export default function EntryPage() {
     setImageSource(null)
   }
 
+  const handleManualInput = () => {
+    setStep("confirm")
+    setPlateNumber("")
+    setEditedPlate("")
+    setIsEditing(true)
+    // If coming from manual input, we might not have a photo yet
+    // setPhotoUrl(null) is already default but being explicit helps understanding
+    
+    // Focus input after render
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 100)
+  }
+
+  const handleAddPhoto = () => {
+    // Save current input before going to camera
+    // In this simple flow, we just go to camera/upload step
+    // Ideally we'd pass state, but for now let's just use the standard flow
+    // which will eventually come back to confirm
+    setStep("select") 
+  }
+
   const handleNewEntry = () => {
     setPhotoUrl(null)
     setPlateNumber("")
@@ -295,7 +362,7 @@ export default function EntryPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CameraCapture onCapture={handlePhotoCapture} />
+              <CameraCapture onCapture={handlePhotoCapture} useNativeCamera={isIOS} />
               {isOcrLoading && (
                 <div className="mt-4 flex items-center justify-center gap-2 text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -361,54 +428,141 @@ export default function EntryPage() {
           <div className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>确认车牌信息</CardTitle>
+                <CardTitle>
+                  {isIOS ? "快速登记" : "确认车牌信息"}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {photoUrl && (
-                  <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-                    <img src={photoUrl || "/placeholder.svg"} alt="车辆照片" className="h-full w-full object-cover" />
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">车牌号码</label>
-                  {isEditing ? (
-                    <div className="flex gap-2">
+                {/* iOS 用户：车牌输入优先，照片可选 */}
+                {isIOS ? (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        车牌号码
+                      </label>
                       <Input
-                        value={editedPlate}
-                        onChange={(e) => setEditedPlate(e.target.value.toUpperCase())}
-                        placeholder="请输入车牌号"
-                        className="text-lg font-mono"
+                        ref={inputRef}
+                        value={editedPlate || plateNumber}
+                        onChange={(e) => {
+                          const val = e.target.value.toUpperCase()
+                          setEditedPlate(val)
+                          setPlateNumber(val)
+                          setIsEditing(true)
+                        }}
+                        placeholder="点击输入框，然后点击键盘上的「扫描文本」"
+                        className="text-xl font-mono h-14 font-bold text-center"
+                        autoFocus={!plateNumber && !editedPlate}
                       />
-                      <Button size="icon" variant="ghost" onClick={handleSaveEdit}>
-                        <Check className="h-4 w-4 text-green-600" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={handleCancelEdit}>
-                        <X className="h-4 w-4 text-red-600" />
-                      </Button>
+                      {!editedPlate && !plateNumber && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
+                          <p className="font-semibold mb-1">📱 如何使用「扫描文本」功能：</p>
+                          <ol className="list-decimal list-inside space-y-1 ml-1">
+                            <li>点击上方输入框（键盘会自动弹出）</li>
+                            <li>在键盘上方找到「扫描文本」按钮（系统自动显示）</li>
+                            <li>点击「扫描文本」→ 系统相机打开</li>
+                            <li>对着车牌拍照 → 车牌号自动识别并填入</li>
+                          </ol>
+                          <p className="mt-2 text-blue-700">💡 也可以直接手动输入车牌号</p>
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 rounded-lg border bg-muted/50 px-4 py-3 text-xl font-mono font-bold">
-                        {plateNumber || "未识别"}
+
+                    {/* 照片区域 - 可选 */}
+                    {photoUrl ? (
+                      <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+                        <img src={photoUrl || "/placeholder.svg"} alt="车辆照片" className="h-full w-full object-cover" />
+                        <Button 
+                          size="sm" 
+                          variant="secondary" 
+                          className="absolute bottom-2 right-2 opacity-80 hover:opacity-100"
+                          onClick={() => {
+                            setStep("camera")
+                            setImageSource("camera")
+                          }}
+                        >
+                          重拍
+                        </Button>
                       </div>
-                      <Button size="icon" variant="outline" onClick={handleEditPlate}>
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
+                    ) : (
+                      <div 
+                        className="aspect-video rounded-lg bg-muted border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/80 transition-colors"
+                        onClick={() => {
+                          setStep("camera")
+                          setImageSource("camera")
+                        }}
+                      >
+                        <Camera className="h-8 w-8 text-muted-foreground mb-2" />
+                        <span className="text-sm text-muted-foreground">拍摄车辆照片 (可选)</span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  /* 非 iOS 用户：保持原有流程 */
+                  <>
+                    {photoUrl ? (
+                      <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+                        <img src={photoUrl || "/placeholder.svg"} alt="车辆照片" className="h-full w-full object-cover" />
+                        <Button 
+                          size="sm" 
+                          variant="secondary" 
+                          className="absolute bottom-2 right-2 opacity-80 hover:opacity-100"
+                          onClick={() => {
+                            setStep("camera")
+                            setImageSource("camera")
+                          }}
+                        >
+                          重拍
+                        </Button>
+                      </div>
+                    ) : (
+                      <div 
+                        className="aspect-video rounded-lg bg-muted border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/80 transition-colors"
+                        onClick={() => {
+                          setStep("camera")
+                          setImageSource("camera")
+                        }}
+                      >
+                        <Camera className="h-8 w-8 text-muted-foreground mb-2" />
+                        <span className="text-sm text-muted-foreground">点击拍摄车辆照片 (可选)</span>
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">车牌号码</label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={isEditing ? editedPlate : plateNumber}
+                          onChange={(e) => {
+                            const val = e.target.value.toUpperCase()
+                            setEditedPlate(val)
+                            setPlateNumber(val)
+                            setIsEditing(true)
+                          }}
+                          placeholder="请输入车牌号"
+                          className="text-lg font-mono h-12 font-bold"
+                        />
+                        {!isEditing && (
+                          <Button size="icon" variant="outline" onClick={handleEditPlate}>
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
+                  </>
+                )}
 
                 {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
               </CardContent>
             </Card>
 
             <div className="flex gap-3">
-              <Button variant="outline" className="flex-1 bg-transparent" onClick={handleRetake}>
-                重新拍照
-              </Button>
+              {!isIOS && (
+                <Button variant="outline" className="flex-1 bg-transparent" onClick={handleRetake}>
+                  {photoUrl ? "重新开始" : "返回"}
+                </Button>
+              )}
               <Button
-                className="flex-1 bg-primary hover:bg-primary/90"
+                className={isIOS ? "w-full" : "flex-1"}
                 onClick={() => handleConfirmEntry(false)}
                 disabled={isLoading || (!plateNumber && !editedPlate)}
               >
