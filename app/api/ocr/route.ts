@@ -120,10 +120,8 @@ export async function POST(request: NextRequest) {
         text: {
           format: {
             type: "json_schema",
-            json_schema: {
-              name: "plate_detection",
-              schema: RESPONSE_SCHEMA,
-            },
+            name: "plate_detection",
+            schema: RESPONSE_SCHEMA,
           },
         },
       })

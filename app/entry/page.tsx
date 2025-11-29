@@ -285,21 +285,21 @@ export default function EntryPage() {
               <CardTitle>采集车辆照片</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border bg-card p-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl border bg-card p-3">
                   <div>
-                    <p className="text-sm font-medium">拍照</p>
-                    <p className="text-xs text-muted-foreground">直接调用摄像头</p>
+                    <p className="text-xs font-medium">拍照</p>
+                    <p className="text-[10px] text-muted-foreground">直接调用摄像头</p>
                   </div>
-                  <div className="mt-4">
+                  <div className="mt-3">
                     <div
-                      className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-4 py-10 text-center hover:bg-muted/70 cursor-pointer transition-colors"
+                      className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors"
                       onClick={() => cameraInputRef.current?.click()}
                     >
-                      <Camera className="h-10 w-10 text-primary mb-2" />
-                      <p className="text-sm font-medium">点击拍照</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {isIOS ? "使用系统相机" : "使用浏览器摄像头"}
+                      <Camera className="h-8 w-8 text-primary mb-1.5" />
+                      <p className="text-xs font-medium">点击拍照</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {isIOS ? "系统相机" : "浏览器摄像头"}
                       </p>
                     </div>
                     {/* 隐藏的相机 input - 直接触发系统相机 */}
@@ -314,19 +314,19 @@ export default function EntryPage() {
                   </div>
                 </div>
 
-                <div className="rounded-xl border bg-card p-4">
+                <div className="rounded-xl border bg-card p-3">
                   <div>
-                    <p className="text-sm font-medium">上传图片</p>
-                    <p className="text-xs text-muted-foreground">选择相册或历史图片</p>
+                    <p className="text-xs font-medium">上传图片</p>
+                    <p className="text-[10px] text-muted-foreground">选择相册或历史图片</p>
                   </div>
-                  <div className="mt-4">
+                  <div className="mt-3">
                     <div
-                      className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-4 py-10 text-center hover:bg-muted/70 cursor-pointer transition-colors"
+                      className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors"
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      <ImageIcon className="h-10 w-10 text-primary mb-2" />
-                      <p className="text-sm font-medium">点击上传图片</p>
-                      <p className="text-xs text-muted-foreground mt-1">支持 JPG / PNG</p>
+                      <ImageIcon className="h-8 w-8 text-primary mb-1.5" />
+                      <p className="text-xs font-medium">点击上传图片</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">支持 JPG / PNG</p>
                     </div>
                     <input
                       ref={fileInputRef}
