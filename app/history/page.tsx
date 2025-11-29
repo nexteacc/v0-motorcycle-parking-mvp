@@ -1,77 +1,35 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Clock, Car, RefreshCw, Loader2, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createClient } from "@/lib/supabase/client"
-import type { Ticket, TicketStatus } from "@/lib/types"
+import type { TicketStatus } from "@/lib/types"
+import { useTickets } from "@/lib/hooks/useTickets"
+import { formatDuration, getStatusBadgeConfig, formatDateTime } from "@/lib/utils"
 
 type FilterStatus = "all" | TicketStatus
 
 export default function HistoryPage() {
-  const [tickets, setTickets] = useState<Ticket[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState<FilterStatus>("exited")
-  const [isRefreshing, setIsRefreshing] = useState(false)
-
-  const fetchTickets = async () => {
-    const supabase = createClient()
-
-    let query = supabase
-      .from("tickets")
-      .select("*")
-      .eq("parking_lot_id", "default")
-      .order("exit_time", { ascending: false, nullsFirst: false })
-      .limit(100)
-
-    if (statusFilter !== "all") {
-      query = query.eq("status", statusFilter)
-    }
-
-    const { data, error } = await query
-
-    if (!error && data) {
-      setTickets(data as Ticket[])
-    }
-  }
-
-  useEffect(() => {
-    setIsLoading(true)
-    fetchTickets().finally(() => setIsLoading(false))
-  }, [statusFilter])
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true)
-    await fetchTickets()
-    setIsRefreshing(false)
-  }
-
-  const formatDuration = (entryTime: string, exitTime?: string | null) => {
-    const start = new Date(entryTime)
-    const end = exitTime ? new Date(exitTime) : new Date()
-    const diff = end.getTime() - start.getTime()
-
-    const hours = Math.floor(diff / (1000 * 60 * 60))
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`
-    }
-    return `${minutes}m`
-  }
+  const {
+    tickets,
+    isLoading,
+    isRefreshing,
+    error,
+    statusFilter,
+    setStatusFilter,
+    refresh,
+  } = useTickets({
+    defaultStatusFilter: "exited",
+    limit: 100,
+    orderBy: "exit_time",
+    orderDirection: "desc",
+  })
 
   const getStatusBadge = (status: TicketStatus) => {
-    const variants: Record<TicketStatus, { label: string; className: string }> = {
-      active: { label: "在场", className: "bg-green-100 text-green-700 hover:bg-green-100" },
-      exited: { label: "已出场", className: "bg-gray-100 text-gray-700 hover:bg-gray-100" },
-      error: { label: "错误", className: "bg-red-100 text-red-700 hover:bg-red-100" },
-      abnormal: { label: "异常", className: "bg-orange-100 text-orange-700 hover:bg-orange-100" },
-    }
-    const { label, className } = variants[status]
+    const { label, className } = getStatusBadgeConfig(status)
     return (
       <Badge variant="secondary" className={className}>
         {label}
@@ -86,7 +44,7 @@ export default function HistoryPage() {
         <div className="mx-auto max-w-md px-4 py-3">
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-semibold text-foreground">历史记录</h1>
-            <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
+            <Button variant="ghost" size="icon" onClick={refresh} disabled={isRefreshing}>
               <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} />
             </Button>
           </div>
@@ -110,6 +68,12 @@ export default function HistoryPage() {
             </SelectContent>
           </Select>
         </div>
+
+        {error && (
+          <div className="mb-4 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {error}
+          </div>
+        )}
 
         {/* List */}
         {isLoading ? (
@@ -145,12 +109,7 @@ export default function HistoryPage() {
                         <div className="min-w-0">
                           <p className="font-mono font-bold text-sm">{ticket.plate_number}</p>
                           <p className="text-xs text-muted-foreground truncate">
-                            {new Date(ticket.entry_time).toLocaleString("zh-CN", {
-                              month: "numeric",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {formatDateTime(ticket.entry_time)}
                           </p>
                         </div>
                       </div>

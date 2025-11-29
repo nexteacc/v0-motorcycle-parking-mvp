@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { QrCode, Search, Check, Undo2, Loader2, Clock, ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,6 +18,9 @@ import {
 import { QRScanner } from "@/components/qr-scanner"
 import { createClient } from "@/lib/supabase/client"
 import type { Ticket } from "@/lib/types"
+import { useDebounce } from "@/lib/hooks/useDebounce"
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler"
+import { formatDuration } from "@/lib/utils"
 
 type Mode = "select" | "qr-scan" | "upload-scan" | "search" | "confirm" | "success"
 
@@ -28,12 +31,17 @@ export default function ExitPage() {
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [exitedTicket, setExitedTicket] = useState<Ticket | null>(null)
   const [showUndoDialog, setShowUndoDialog] = useState(false)
   const [canUndo, setCanUndo] = useState(false)
 
   const deviceId = typeof window !== "undefined" ? localStorage.getItem("device_id") || "unknown" : "unknown"
+  
+  // 错误处理 Hook
+  const { error, handleError, clearError } = useErrorHandler("操作失败")
+  
+  // 搜索防抖：延迟 400ms 执行搜索（出场页面可以稍长一点）
+  const debouncedSearchQuery = useDebounce(searchQuery, 400)
 
   const handleQRScan = async (data: string) => {
     try {
@@ -42,48 +50,55 @@ export default function ExitPage() {
         await findTicketById(parsed.id)
       }
     } catch {
-      setError("无效的二维码")
+      handleError(new Error("无效的二维码"))
     }
   }
 
   const findTicketById = async (id: number) => {
     setIsLoading(true)
-    setError(null)
+    clearError()
 
     try {
       const supabase = createClient()
-      const { data, error: fetchError } = await supabase.from("tickets").select("*").eq("id", id).single()
+      const { data, error: fetchError } = await supabase
+        .from("tickets")
+        .select("id, plate_number, entry_time, exit_time, photo_url, vehicle_color, status, device_id, parking_lot_id, plate_modified, original_plate_number, created_at, updated_at")
+        .eq("id", id)
+        .single()
 
       if (fetchError) throw fetchError
 
       if (!data) {
-        setError("未找到该停车记录")
+        handleError(new Error("未找到该停车记录"))
         return
       }
 
       setSelectedTicket(data as Ticket)
       setMode("confirm")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "查询失败")
+      handleError(err, "查询失败")
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return
+  const performSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([])
+      return
+    }
 
     setIsSearching(true)
-    setError(null)
+    clearError()
 
     try {
       const supabase = createClient()
       const { data, error: searchError } = await supabase
         .from("tickets")
-        .select("*")
+        .select("id, plate_number, entry_time, exit_time, photo_url, vehicle_color, status, device_id, parking_lot_id, plate_modified, original_plate_number, created_at, updated_at")
         .eq("parking_lot_id", "default")
         .eq("status", "active")
-        .ilike("plate_number", `%${searchQuery.toUpperCase()}%`)
+        .ilike("plate_number", `%${query.toUpperCase()}%`)
         .order("entry_time", { ascending: false })
         .limit(10)
 
@@ -92,13 +107,26 @@ export default function ExitPage() {
       setSearchResults((data as Ticket[]) || [])
 
       if (!data || data.length === 0) {
-        setError("未找到匹配的在场车辆")
+        handleError(new Error("未找到匹配的在场车辆"))
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "搜索失败")
+      handleError(err, "搜索失败")
+      setSearchResults([])
     } finally {
       setIsSearching(false)
     }
+  }
+
+  // 防抖搜索：当防抖后的搜索关键词变化时，执行搜索
+  useEffect(() => {
+    if (mode === "search") {
+      performSearch(debouncedSearchQuery)
+    }
+  }, [debouncedSearchQuery, mode])
+
+  // 手动搜索（保留用于按钮点击）
+  const handleSearch = () => {
+    performSearch(searchQuery)
   }
 
   const handleSelectTicket = (ticket: Ticket) => {
@@ -110,7 +138,7 @@ export default function ExitPage() {
     if (!selectedTicket) return
 
     setIsLoading(true)
-    setError(null)
+    clearError()
 
     try {
       const supabase = createClient()
@@ -139,8 +167,9 @@ export default function ExitPage() {
       setExitedTicket(data as Ticket)
       setCanUndo(true)
       setMode("success")
+      clearError()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "出场登记失败")
+      handleError(err, "出场登记失败")
     } finally {
       setIsLoading(false)
     }
@@ -173,13 +202,13 @@ export default function ExitPage() {
     if (!exitedTicket) return
 
     setIsLoading(true)
-    setError(null)
+    clearError()
 
     try {
       // Verify can still undo
       const stillCanUndo = await checkCanUndo(exitedTicket.id)
       if (!stillCanUndo) {
-        setError("无法撤销：该车牌已有新的入场记录")
+        handleError(new Error("无法撤销：该车牌已有新的入场记录"))
         setCanUndo(false)
         setShowUndoDialog(false)
         return
@@ -210,8 +239,9 @@ export default function ExitPage() {
       setSelectedTicket(exitedTicket)
       setExitedTicket(null)
       setMode("confirm")
+      clearError()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "撤销失败")
+      handleError(err, "撤销失败")
     } finally {
       setIsLoading(false)
     }
@@ -222,7 +252,7 @@ export default function ExitPage() {
     setExitedTicket(null)
     setSearchQuery("")
     setSearchResults([])
-    setError(null)
+    clearError()
     setMode("select")
   }
 
@@ -249,7 +279,7 @@ export default function ExitPage() {
             if (code) {
               handleQRScan(code.data)
             } else {
-              setError("无法识别二维码，请确保图片清晰")
+              handleError(new Error("无法识别二维码，请确保图片清晰"))
             }
           }
         }
@@ -259,19 +289,6 @@ export default function ExitPage() {
     reader.readAsDataURL(file)
   }
 
-  const formatDuration = (entryTime: string, exitTime?: string | null) => {
-    const start = new Date(entryTime)
-    const end = exitTime ? new Date(exitTime) : new Date()
-    const diff = end.getTime() - start.getTime()
-
-    const hours = Math.floor(diff / (1000 * 60 * 60))
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-
-    if (hours > 0) {
-      return `${hours}小时${minutes}分钟`
-    }
-    return `${minutes}分钟`
-  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -399,7 +416,7 @@ export default function ExitPage() {
                     variant="outline"
                     className="w-full bg-transparent"
                     onClick={() => {
-                      setError(null)
+                      clearError()
                       setMode("select")
                     }}
                   >
@@ -421,15 +438,22 @@ export default function ExitPage() {
                   <div className="flex gap-2">
                     <Input
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
-                      placeholder="输入车牌号"
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value.toUpperCase())
+                        clearError()
+                      }}
+                      placeholder="输入车牌号（实时搜索）"
                       className="font-mono"
-                      onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     />
-                    <Button onClick={handleSearch} disabled={isSearching}>
+                    <Button onClick={handleSearch} disabled={isSearching} variant="outline">
                       {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                     </Button>
                   </div>
+                  {error && (
+                    <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                      {error}
+                    </div>
+                  )}
 
                   {searchResults.length > 0 && (
                     <div className="space-y-2">

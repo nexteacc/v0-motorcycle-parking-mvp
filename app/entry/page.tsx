@@ -222,6 +222,7 @@ export default function EntryPage() {
         .insert({
           plate_number: finalPlate,
           photo_url: uploadedPhotoUrl,
+          vehicle_color: analysisInfo.color, // 车辆颜色（从 OCR 识别）
           status: forceCreate ? "abnormal" : "active",
           device_id: deviceId,
           parking_lot_id: "default",

@@ -4,6 +4,7 @@ export interface Ticket {
   entry_time: string
   exit_time: string | null
   photo_url: string | null
+  vehicle_color: string | null // 车辆颜色（从 OCR 识别或手动输入）
   status: "active" | "exited" | "error" | "abnormal"
   device_id: string | null
   parking_lot_id: string

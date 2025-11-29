@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import Link from "next/link"
 import { Search, Filter, Clock, Car, RefreshCw, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -8,81 +8,33 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createClient } from "@/lib/supabase/client"
-import type { Ticket, TicketStatus } from "@/lib/types"
+import type { TicketStatus } from "@/lib/types"
+import { useTickets } from "@/lib/hooks/useTickets"
+import { formatDuration, getStatusBadgeConfig, formatDateTime } from "@/lib/utils"
 
 type FilterStatus = "all" | TicketStatus
 
 export default function VehiclesPage() {
-  const [tickets, setTickets] = useState<Ticket[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<FilterStatus>("active")
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  const {
+    tickets,
+    isLoading,
+    isRefreshing,
+    error,
+    searchQuery,
+    setSearchQuery,
+    statusFilter,
+    setStatusFilter,
+    fetchTickets,
+    refresh,
+  } = useTickets({
+    defaultStatusFilter: "active",
+    limit: 100,
+  })
 
-  const fetchTickets = async () => {
-    const supabase = createClient()
-
-    let query = supabase
-      .from("tickets")
-      .select("*")
-      .eq("parking_lot_id", "default")
-      .order("entry_time", { ascending: false })
-      .limit(100)
-
-    if (statusFilter !== "all") {
-      query = query.eq("status", statusFilter)
-    }
-
-    if (searchQuery.trim()) {
-      query = query.ilike("plate_number", `%${searchQuery.toUpperCase()}%`)
-    }
-
-    const { data, error } = await query
-
-    if (!error && data) {
-      setTickets(data as Ticket[])
-    }
-  }
-
-  useEffect(() => {
-    setIsLoading(true)
-    fetchTickets().finally(() => setIsLoading(false))
-  }, [statusFilter])
-
-  const handleSearch = () => {
-    setIsLoading(true)
-    fetchTickets().finally(() => setIsLoading(false))
-  }
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true)
-    await fetchTickets()
-    setIsRefreshing(false)
-  }
-
-  const formatDuration = (entryTime: string, exitTime?: string | null) => {
-    const start = new Date(entryTime)
-    const end = exitTime ? new Date(exitTime) : new Date()
-    const diff = end.getTime() - start.getTime()
-
-    const hours = Math.floor(diff / (1000 * 60 * 60))
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`
-    }
-    return `${minutes}m`
-  }
+  // 搜索防抖已在 useTickets hook 内部实现，无需额外处理
 
   const getStatusBadge = (status: TicketStatus) => {
-    const variants: Record<TicketStatus, { label: string; className: string }> = {
-      active: { label: "在场", className: "bg-green-100 text-green-700 hover:bg-green-100" },
-      exited: { label: "已出场", className: "bg-gray-100 text-gray-700 hover:bg-gray-100" },
-      error: { label: "错误", className: "bg-red-100 text-red-700 hover:bg-red-100" },
-      abnormal: { label: "异常", className: "bg-orange-100 text-orange-700 hover:bg-orange-100" },
-    }
-    const { label, className } = variants[status]
+    const { label, className } = getStatusBadgeConfig(status)
     return (
       <Badge variant="secondary" className={className}>
         {label}
@@ -98,7 +50,7 @@ export default function VehiclesPage() {
         <div className="mx-auto max-w-md px-4 py-3">
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-semibold text-foreground">车辆列表</h1>
-            <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
+            <Button variant="ghost" size="icon" onClick={refresh} disabled={isRefreshing}>
               <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} />
             </Button>
           </div>
@@ -125,14 +77,18 @@ export default function VehiclesPage() {
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
-              placeholder="搜索车牌号"
+              placeholder="搜索车牌号（实时搜索）"
               className="font-mono text-sm"
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
-            <Button onClick={handleSearch} disabled={isLoading} size="sm">
-              <Search className="h-4 w-4" />
+            <Button onClick={refresh} disabled={isLoading || isRefreshing} size="sm" variant="outline">
+              {isRefreshing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
           </div>
+          {error && (
+            <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {error}
+            </div>
+          )}
 
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
@@ -185,12 +141,7 @@ export default function VehiclesPage() {
                         <div>
                           <p className="font-mono font-bold text-sm">{ticket.plate_number}</p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(ticket.entry_time).toLocaleString("zh-CN", {
-                              month: "numeric",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {formatDateTime(ticket.entry_time)}
                           </p>
                         </div>
                       </div>
