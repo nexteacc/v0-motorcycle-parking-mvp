@@ -78,7 +78,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 验证 base64 图片数据
-    const base64 = image.includes(",") ? image.split(",")[1] : image
+    // 确保图片数据是 data URL 格式（data:image/jpeg;base64,...）
+    let imageDataUrl = image
+    if (!image.startsWith("data:")) {
+      // 如果不是 data URL 格式，添加前缀
+      imageDataUrl = `data:image/jpeg;base64,${image}`
+    }
+    
+    const base64 = imageDataUrl.includes(",") ? imageDataUrl.split(",")[1] : imageDataUrl
     if (!base64 || base64.length < 100) {
       return NextResponse.json(
         { 
@@ -92,6 +99,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 调用 OpenAI API
+    // 根据官方文档，base64 图片应使用 image_url 字段，格式为 data URL
     let response
     try {
       response = await openai.responses.create({
@@ -102,15 +110,20 @@ export async function POST(request: NextRequest) {
             role: "user",
             content: [
               { type: "input_text", text: PROMPT },
-              { type: "input_image", image_base64: base64 },
+              { 
+                type: "input_image", 
+                image_url: imageDataUrl, // 使用 image_url 而不是 image_base64
+              },
             ],
           },
         ],
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "plate_detection",
-            schema: RESPONSE_SCHEMA,
+        text: {
+          format: {
+            type: "json_schema",
+            json_schema: {
+              name: "plate_detection",
+              schema: RESPONSE_SCHEMA,
+            },
           },
         },
       })
@@ -146,8 +159,23 @@ export async function POST(request: NextRequest) {
     }
 
     // 解析响应
-    const jsonPayload = response.output?.[0]?.content?.[0]
-    const rawText = jsonPayload?.type === "output_text" ? jsonPayload.text : undefined
+    // 根据官方 API 响应格式：output[0] 是 message 类型，content[0] 是 output_text 类型
+    const outputMessage = response.output?.[0]
+    if (!outputMessage || outputMessage.type !== "message") {
+      console.error("OCR API: Invalid response format - no message output:", response)
+      return NextResponse.json(
+        { 
+          plateNumber: null, 
+          confidence: null, 
+          color: null, 
+          error: "未获取到识别结果，请重新尝试" 
+        },
+        { status: 200 }
+      )
+    }
+
+    const textContent = outputMessage.content?.find((item: any) => item.type === "output_text")
+    const rawText = textContent?.text
 
     if (!rawText) {
       console.error("OCR API: No text in response:", response)
