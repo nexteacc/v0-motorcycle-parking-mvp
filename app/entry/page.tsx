@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { AlertTriangle, Camera, Check, ImageIcon, Loader2, RefreshCw, Sparkles } from "lucide-react"
+import { AlertTriangle, Camera, Check, ImageIcon, Loader2, Sparkles } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,7 +17,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { QRCodeDisplay } from "@/components/qr-code-display"
-import { CameraCapture } from "@/components/camera-capture"
 import { createClient } from "@/lib/supabase/client"
 import type { Ticket } from "@/lib/types"
 
@@ -39,13 +38,13 @@ export default function EntryPage() {
   const [analysisInfo, setAnalysisInfo] = useState<AnalysisInfo>(EMPTY_ANALYSIS)
   const [analysisError, setAnalysisError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
-  const [isCameraActive, setIsCameraActive] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [createdTicket, setCreatedTicket] = useState<Ticket | null>(null)
   const [duplicateTicket, setDuplicateTicket] = useState<Ticket | null>(null)
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null) // 用于直接触发系统相机
   const plateInputRef = useRef<HTMLInputElement>(null)
   const [isIOS, setIsIOS] = useState(false)
 
@@ -81,11 +80,26 @@ export default function EntryPage() {
     setFormError(null)
     setDuplicateTicket(null)
     setShowDuplicateDialog(false)
+    // 重置文件输入，允许重新选择
+    if (cameraInputRef.current) cameraInputRef.current.value = ""
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
-  const handleCameraCapture = async (imageDataUrl: string) => {
-    setIsCameraActive(false)
-    await runAnalysis(imageDataUrl)
+  // 处理系统相机拍照（iOS/Android）
+  const handleNativeCamera = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const result = e.target?.result as string
+      if (result) {
+        await runAnalysis(result)
+      }
+    }
+    reader.readAsDataURL(file)
+    // 重置 input，允许重复选择同一文件
+    event.target.value = ""
   }
 
   const handleUploadImage = (event: ChangeEvent<HTMLInputElement>) => {
@@ -132,7 +146,9 @@ export default function EntryPage() {
         setPlateNumber(data.plateNumber)
       }
     } catch (err) {
-      setAnalysisError(err instanceof Error ? err.message : "识别失败，请手动输入")
+      const errorMessage = err instanceof Error ? err.message : "识别失败，请手动输入"
+      console.error("OCR analysis error:", err)
+      setAnalysisError(errorMessage)
     } finally {
       setViewState("result")
     }
@@ -262,7 +278,8 @@ export default function EntryPage() {
       </header>
 
       <main className="mx-auto max-w-md px-4 py-6 space-y-4">
-        {viewState !== "success" && (
+        {/* 只在初始状态（idle）且没有照片时显示采集卡片 */}
+        {viewState === "idle" && !photoPreview && (
           <Card>
             <CardHeader>
               <CardTitle>采集车辆照片</CardTitle>
@@ -270,44 +287,37 @@ export default function EntryPage() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-xl border bg-card p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">拍照</p>
-                      <p className="text-xs text-muted-foreground">直接调用摄像头</p>
-                    </div>
-                    {isCameraActive && (
-                      <Button variant="ghost" size="icon" onClick={() => setIsCameraActive(false)}>
-                        <RefreshCw className="h-4 w-4" />
-                      </Button>
-                    )}
+                  <div>
+                    <p className="text-sm font-medium">拍照</p>
+                    <p className="text-xs text-muted-foreground">直接调用摄像头</p>
                   </div>
                   <div className="mt-4">
-                    {isCameraActive ? (
-                      <div className="space-y-3">
-                        <CameraCapture onCapture={handleCameraCapture} useNativeCamera={isIOS} />
-                        <Button variant="outline" className="w-full" onClick={() => setIsCameraActive(false)}>
-                          停止拍摄
-                        </Button>
-                      </div>
-                    ) : (
-                      <div
-                        className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-4 py-10 text-center hover:bg-muted/70 cursor-pointer transition-colors"
-                        onClick={() => setIsCameraActive(true)}
-                      >
-                        <Camera className="h-10 w-10 text-primary mb-2" />
-                        <p className="text-sm font-medium">点击启动相机</p>
-                        <p className="text-xs text-muted-foreground mt-1">支持 iOS 原生相机 / 浏览器摄像头</p>
-                      </div>
-                    )}
+                    <div
+                      className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-4 py-10 text-center hover:bg-muted/70 cursor-pointer transition-colors"
+                      onClick={() => cameraInputRef.current?.click()}
+                    >
+                      <Camera className="h-10 w-10 text-primary mb-2" />
+                      <p className="text-sm font-medium">点击拍照</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {isIOS ? "使用系统相机" : "使用浏览器摄像头"}
+                      </p>
+                    </div>
+                    {/* 隐藏的相机 input - 直接触发系统相机 */}
+                    <input
+                      ref={cameraInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={handleNativeCamera}
+                    />
                   </div>
                 </div>
 
                 <div className="rounded-xl border bg-card p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">上传图片</p>
-                      <p className="text-xs text-muted-foreground">选择相册或历史图片</p>
-                    </div>
+                  <div>
+                    <p className="text-sm font-medium">上传图片</p>
+                    <p className="text-xs text-muted-foreground">选择相册或历史图片</p>
                   </div>
                   <div className="mt-4">
                     <div
@@ -329,11 +339,9 @@ export default function EntryPage() {
                 </div>
               </div>
 
-              {viewState === "idle" && (
-                <Button variant="ghost" size="sm" className="w-full" onClick={handleManualEntry}>
-                  无法拍照？直接手动登记
-                </Button>
-              )}
+              <Button variant="ghost" size="sm" className="w-full" onClick={handleManualEntry}>
+                无法拍照？直接手动登记
+              </Button>
             </CardContent>
           </Card>
         )}

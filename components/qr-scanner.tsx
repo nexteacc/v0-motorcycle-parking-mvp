@@ -81,9 +81,25 @@ export function QRScanner({ onScan }: QRScannerProps) {
 
         animationRef.current = requestAnimationFrame(scanFrame)
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Camera error:", err)
-      setError("无法访问摄像头，请检查权限设置")
+      let errorMessage = "无法访问摄像头"
+      
+      if (err?.name === "NotAllowedError" || err?.name === "PermissionDismissedError") {
+        errorMessage = "摄像头权限被拒绝，请在浏览器设置中允许摄像头访问"
+      } else if (err?.name === "NotFoundError" || err?.name === "DevicesNotFoundError") {
+        errorMessage = "未找到摄像头设备"
+      } else if (err?.name === "NotReadableError" || err?.name === "TrackStartError") {
+        errorMessage = "摄像头被其他应用占用，请关闭其他应用后重试"
+      } else if (err?.name === "OverconstrainedError") {
+        errorMessage = "摄像头不支持所需设置"
+      } else if (err?.message) {
+        errorMessage = `摄像头错误：${err.message}`
+      } else {
+        errorMessage = "无法访问摄像头，请检查权限设置"
+      }
+      
+      setError(errorMessage)
       setIsScanning(false)
     }
   }, [onScan, stopScanning])
