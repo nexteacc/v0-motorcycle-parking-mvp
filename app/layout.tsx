@@ -5,6 +5,8 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { BottomNav } from "@/components/bottom-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { PWAInstaller } from "@/components/pwa-installer"
+import { ServiceWorkerRegistration } from "@/components/service-worker-registration"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -13,6 +15,23 @@ export const metadata: Metadata = {
   title: "摩托车停车管理系统 - 智能停车解决方案",
   description: "支持车牌识别、二维码扫码、实时追踪的现代化摩托车停车管理平台",
   generator: "v0.app",
+  manifest: "/manifest.json",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: "cover",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "停车管理",
+  },
   icons: {
     icon: [
       {
@@ -48,6 +67,8 @@ export default function RootLayout({
         {children}
         <BottomNav />
         <Analytics />
+        <PWAInstaller />
+        <ServiceWorkerRegistration />
       </body>
     </html>
   )

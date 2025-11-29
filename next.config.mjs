@@ -6,7 +6,33 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
- 
+  // PWA 支持：确保 manifest 和 service worker 文件可以被正确提供
+  async headers() {
+    return [
+      {
+        source: '/manifest.json',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/manifest+json',
+          },
+        ],
+      },
+      {
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript',
+          },
+          {
+            key: 'Service-Worker-Allowed',
+            value: '/',
+          },
+        ],
+      },
+    ]
+  },
 }
 
 export default nextConfig
