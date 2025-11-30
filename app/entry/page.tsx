@@ -360,13 +360,14 @@ export default function EntryPage() {
       <main className="mx-auto max-w-md px-4 py-6 space-y-4">
         {/* 只在初始状态（idle）且没有照片时显示采集卡片 */}
         {viewState === "idle" && !photoPreview && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Capture Photo</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border bg-card p-3">
+          <>
+            <Button variant="ghost" size="sm" className="w-full" onClick={handleManualEntry}>
+              Manual
+            </Button>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Card>
+                <CardContent className="p-3">
                   <div
                     className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors min-h-[120px]"
                     onClick={() => cameraInputRef.current?.click()}
@@ -384,9 +385,11 @@ export default function EntryPage() {
                     className="hidden"
                     onChange={handleNativeCamera}
                   />
-                </div>
+                </CardContent>
+              </Card>
 
-                <div className="rounded-xl border bg-card p-3">
+              <Card>
+                <CardContent className="p-3">
                   <div
                     className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors min-h-[120px]"
                     onClick={() => fileInputRef.current?.click()}
@@ -402,14 +405,10 @@ export default function EntryPage() {
                     className="hidden"
                     onChange={handleUploadImage}
                   />
-                </div>
-              </div>
-
-              <Button variant="ghost" size="sm" className="w-full" onClick={handleManualEntry}>
-                Manual
-              </Button>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </div>
+          </>
         )}
 
         {showResultCard && (

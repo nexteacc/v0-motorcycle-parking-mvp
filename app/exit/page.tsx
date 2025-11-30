@@ -387,13 +387,15 @@ export default function ExitPage() {
 
       <main className="mx-auto max-w-md px-4 py-6 space-y-4">
         {mode === "select" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Select Method</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border bg-card p-3">
+          <>
+            <Button variant="ghost" size="sm" className="w-full" onClick={() => setMode("search")}>
+              <Search className="mr-2 h-4 w-4" />
+              Search
+            </Button>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Card>
+                <CardContent className="p-3">
                   <div
                     className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors min-h-[120px]"
                     onClick={() => setMode("qr-scan")}
@@ -402,9 +404,11 @@ export default function ExitPage() {
                     <p className="text-xs font-medium">Scan QR Code</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5 opacity-0">Placeholder</p>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
 
-                <div className="rounded-xl border bg-card p-3">
+              <Card>
+                <CardContent className="p-3">
                   <div
                     className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/60 bg-muted/40 px-2 py-6 text-center hover:bg-muted/70 cursor-pointer transition-colors min-h-[120px]"
                     onClick={() => setMode("upload-scan")}
@@ -413,15 +417,10 @@ export default function ExitPage() {
                     <p className="text-xs font-medium">Upload</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">JPG / PNG</p>
                   </div>
-                </div>
-              </div>
-
-              <Button variant="ghost" size="sm" className="w-full" onClick={() => setMode("search")}>
-                <Search className="mr-2 h-4 w-4" />
-                Search
-              </Button>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </div>
+          </>
         )}
 
         {(mode === "qr-scan" || mode === "upload-scan" || mode === "search") && (
