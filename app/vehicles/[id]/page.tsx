@@ -294,7 +294,14 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
               </div>
             ) : (
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-mono font-bold">{ticket.plate_number}</span>
+                <div className="flex items-center gap-3">
+                  {ticket.vehicle_color && (
+                    <span className="text-sm font-medium text-muted-foreground capitalize">
+                      {ticket.vehicle_color}
+                    </span>
+                  )}
+                  <span className="text-2xl font-mono font-bold">{ticket.plate_number}</span>
+                </div>
                 {ticket.status === "active" && !ticket.plate_modified && (
                   <Button size="icon" variant="outline" onClick={handleEditPlate}>
                     <Edit2 className="h-4 w-4" />
