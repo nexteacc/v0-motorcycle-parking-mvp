@@ -388,9 +388,14 @@ export default function ExitPage() {
       <main className="mx-auto max-w-md px-4 py-6 space-y-4">
         {mode === "select" && (
           <>
-            <Button variant="ghost" size="sm" className="w-full" onClick={() => setMode("search")}>
-              <Search className="mr-2 h-4 w-4" />
-              Search
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-center gap-2"
+              onClick={() => setMode("search")}
+            >
+              <Search className="h-4 w-4" />
+              <span className="text-sm font-medium">Search</span>
             </Button>
 
             <div className="grid grid-cols-2 gap-3">

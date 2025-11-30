@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { AlertTriangle, Camera, Check, ImageIcon, Loader2, Sparkles } from "lucide-react"
+import { AlertTriangle, Camera, Check, ImageIcon, Keyboard, Loader2, Sparkles } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -361,8 +361,14 @@ export default function EntryPage() {
         {/* 只在初始状态（idle）且没有照片时显示采集卡片 */}
         {viewState === "idle" && !photoPreview && (
           <>
-            <Button variant="ghost" size="sm" className="w-full" onClick={handleManualEntry}>
-              Manual
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-center gap-2"
+              onClick={handleManualEntry}
+            >
+              <Keyboard className="h-4 w-4" />
+              <span className="text-sm font-medium">Manual</span>
             </Button>
 
             <div className="grid grid-cols-2 gap-3">

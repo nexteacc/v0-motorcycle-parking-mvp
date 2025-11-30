@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { Car, LogIn, LogOut, List, Clock, Loader2 } from "lucide-react"
+import Image from "next/image"
+import { LogIn, LogOut, List, Clock, Loader2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useStats } from "@/lib/hooks/useStats"
 
@@ -26,8 +27,14 @@ export default function HomePage() {
       >
         <div className="mx-auto max-w-md px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
-              <Car className="h-6 w-6 text-primary" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden">
+              <Image
+                src="/logo.png"
+                alt="Parking Logo"
+                width={40}
+                height={40}
+                className="object-contain"
+              />
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-tight">Parking</h1>
