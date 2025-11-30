@@ -3,14 +3,22 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Search, Filter, Clock, RefreshCw, Loader2 } from "lucide-react"
+import { Search, Filter, Clock, RefreshCw, Loader2, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { SwipeableCard } from "@/components/swipeable-card"
-import type { TicketStatus } from "@/lib/types"
+import type { TicketStatus, Ticket } from "@/lib/types"
 import { useTickets } from "@/lib/hooks/useTickets"
 import { formatDuration, getStatusBadgeConfig, formatDateTime } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
@@ -21,6 +29,8 @@ type FilterStatus = "all" | TicketStatus
 export default function VehiclesPage() {
   const router = useRouter()
   const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set())
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [ticketToDelete, setTicketToDelete] = useState<Ticket | null>(null)
   const {
     tickets,
     isLoading,
@@ -51,10 +61,20 @@ export default function VehiclesPage() {
 
   const activeCount = tickets.filter((t) => t.status === "active").length
 
-  const handleDelete = async (ticketId: number) => {
+  const handleDeleteClick = (ticket: Ticket) => {
+    setTicketToDelete(ticket)
+    setShowDeleteDialog(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!ticketToDelete) return
+
+    const ticketId = ticketToDelete.id
     if (deletingIds.has(ticketId)) return
 
     setDeletingIds((prev) => new Set(prev).add(ticketId))
+    setShowDeleteDialog(false)
+    
     try {
       clearError()
       const supabase = createClient()
@@ -64,6 +84,7 @@ export default function VehiclesPage() {
 
       // 刷新列表
       await refresh()
+      setTicketToDelete(null)
     } catch (err) {
       handleError(err, "Delete failed, please try again")
     } finally {
@@ -73,6 +94,11 @@ export default function VehiclesPage() {
         return next
       })
     }
+  }
+
+  const handleCancelDelete = () => {
+    setShowDeleteDialog(false)
+    setTicketToDelete(null)
   }
 
   const handleCardTap = (ticketId: number) => {
@@ -158,7 +184,7 @@ export default function VehiclesPage() {
             {tickets.map((ticket) => (
               <SwipeableCard
                 key={ticket.id}
-                onDelete={() => handleDelete(ticket.id)}
+                onDelete={() => handleDeleteClick(ticket)}
                 onTap={() => handleCardTap(ticket.id)}
                 disabled={deletingIds.has(ticket.id)}
                 deleteLabel={deletingIds.has(ticket.id) ? "Deleting..." : "Delete"}
@@ -200,6 +226,70 @@ export default function VehiclesPage() {
           </div>
         )}
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog 
+        open={showDeleteDialog} 
+        onOpenChange={(open) => {
+          if (!open) {
+            handleCancelDelete()
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Confirm Delete
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this parking record?
+              {ticketToDelete && (
+                <>
+                  <br />
+                  <br />
+                  <span className="font-mono font-bold text-foreground">
+                    {ticketToDelete.plate_number}
+                  </span>
+                  <br />
+                  <span className="text-xs text-muted-foreground">
+                    Entry: {formatDateTime(ticketToDelete.entry_time)}
+                  </span>
+                  {ticketToDelete.exit_time && (
+                    <span className="text-xs text-muted-foreground block">
+                      Exit: {formatDateTime(ticketToDelete.exit_time)}
+                    </span>
+                  )}
+                  <br />
+                  <span className="text-xs text-destructive font-medium">
+                    This action cannot be undone.
+                  </span>
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={handleCancelDelete} className="flex-1">
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={!ticketToDelete || deletingIds.has(ticketToDelete.id)}
+              className="flex-1"
+            >
+              {ticketToDelete && deletingIds.has(ticketToDelete.id) ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
