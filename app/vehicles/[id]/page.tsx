@@ -147,6 +147,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
       setTicket(data as Ticket)
       setShowExitDialog(false)
+      router.push("/vehicles")
     } catch (err) {
       handleError(err, "Check out failed")
     } finally {

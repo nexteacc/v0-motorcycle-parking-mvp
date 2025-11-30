@@ -76,12 +76,16 @@ export default function VehiclesPage() {
     try {
       clearError()
       const supabase = createClient()
-      const { error: deleteError } = await supabase.from("tickets").delete().eq("id", ticketId)
+      const { data, error: deleteError } = await supabase.from("tickets").delete().eq("id", ticketId).select()
 
       if (deleteError) throw deleteError
 
-      await refresh()
+      if (!data || data.length === 0) {
+        throw new Error("Record not found or already deleted")
+      }
+
       setTicketToDelete(null)
+      await refresh()
     } catch (err) {
       handleError(err, "Delete failed, please try again")
     } finally {
