@@ -8,6 +8,8 @@ import { useStats } from "@/lib/hooks/useStats"
 
 export default function HomePage() {
   const { stats, isLoading: statsLoading } = useStats()
+  const today = new Date()
+  const dateLabel = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}.${String(today.getDate()).padStart(2, "0")}`
 
   const quickActions = [
     { href: "/entry", title: "Check In", icon: "/checkin.png" },
@@ -18,27 +20,11 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <main className="mx-auto max-w-md px-4 py-6">
-        {/* Quick Actions Grid */}
-        <div className="grid gap-3 grid-cols-2 mb-8">
-          {quickActions.map(({ href, icon, title }) => (
-            <Link key={href} href={href}>
-              <Card className="h-full cursor-pointer transition-all hover:border-primary/50 hover:shadow-md active:scale-95">
-                <CardContent className="p-4 flex flex-col items-center text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-2 overflow-hidden">
-                    <Image src={icon} alt={`${title} icon`} width={48} height={48} className="object-contain" priority />
-                  </div>
-                  <h3 className="font-semibold text-sm">{title}</h3>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-
+      <main className="mx-auto max-w-md px-4 py-6 space-y-6">
         {/* Stats Section */}
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-          <CardHeader>
-            <CardTitle className="text-sm">Today</CardTitle>
+          <CardHeader className="pb-2 text-center">
+            <CardTitle className="text-sm text-muted-foreground tracking-wide">{dateLabel}</CardTitle>
           </CardHeader>
           <CardContent>
             {statsLoading ? (
@@ -63,6 +49,23 @@ export default function HomePage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Quick Actions Grid */}
+        <div className="grid gap-3 grid-cols-2">
+          {quickActions.map(({ href, icon, title }) => (
+            <Link key={href} href={href}>
+              <Card className="h-full cursor-pointer transition-all hover:border-primary/50 hover:shadow-md active:scale-95">
+                <CardContent className="p-4 flex flex-col items-center text-center">
+                  <div className="flex h-12 w-12 items-center justify-center mb-2 overflow-hidden">
+                    <Image src={icon} alt={`${title} icon`} width={48} height={48} className="object-contain" priority />
+                  </div>
+                  <h3 className="font-semibold text-sm">{title}</h3>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
       </main>
     </div>
   )
