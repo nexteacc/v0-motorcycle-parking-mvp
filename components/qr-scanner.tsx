@@ -81,22 +81,29 @@ export function QRScanner({ onScan }: QRScannerProps) {
 
         animationRef.current = requestAnimationFrame(scanFrame)
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Camera error:", err)
       let errorMessage = "Unable to access camera"
       
-      if (err?.name === "NotAllowedError" || err?.name === "PermissionDismissedError") {
-        errorMessage = "Camera permission denied, please allow camera access in browser settings"
-      } else if (err?.name === "NotFoundError" || err?.name === "DevicesNotFoundError") {
-        errorMessage = "Camera device not found"
-      } else if (err?.name === "NotReadableError" || err?.name === "TrackStartError") {
-        errorMessage = "Camera is being used by another app, please close other apps and try again"
-      } else if (err?.name === "OverconstrainedError") {
-        errorMessage = "Camera does not support required settings"
-      } else if (err?.message) {
-        errorMessage = `Camera error: ${err.message}`
-      } else {
-        errorMessage = "Unable to access camera, please check permission settings"
+      // Type guard for DOMException/Error with name property
+      const isErrorWithName = (error: unknown): error is { name?: string; message?: string } => {
+        return typeof error === 'object' && error !== null
+      }
+      
+      if (isErrorWithName(err)) {
+        if (err.name === "NotAllowedError" || err.name === "PermissionDismissedError") {
+          errorMessage = "Camera permission denied, please allow camera access in browser settings"
+        } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+          errorMessage = "Camera device not found"
+        } else if (err.name === "NotReadableError" || err.name === "TrackStartError") {
+          errorMessage = "Camera is being used by another app, please close other apps and try again"
+        } else if (err.name === "OverconstrainedError") {
+          errorMessage = "Camera does not support required settings"
+        } else if (err.message) {
+          errorMessage = `Camera error: ${err.message}`
+        } else {
+          errorMessage = "Unable to access camera, please check permission settings"
+        }
       }
       
       setError(errorMessage)

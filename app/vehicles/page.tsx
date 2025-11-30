@@ -13,6 +13,7 @@ import type { TicketStatus } from "@/lib/types"
 import { useTickets } from "@/lib/hooks/useTickets"
 import { formatDuration, getStatusBadgeConfig, formatDateTime } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler"
 
 type FilterStatus = "all" | TicketStatus
 
@@ -34,6 +35,7 @@ export default function VehiclesPage() {
     defaultStatusFilter: "active",
     limit: 100,
   })
+  const { error: actionError, handleError, clearError } = useErrorHandler("Delete failed")
 
   // 搜索防抖已在 useTickets hook 内部实现，无需额外处理
 
@@ -53,6 +55,7 @@ export default function VehiclesPage() {
 
     setDeletingIds((prev) => new Set(prev).add(ticketId))
     try {
+      clearError()
       const supabase = createClient()
       const { error: deleteError } = await supabase.from("tickets").delete().eq("id", ticketId)
 
@@ -61,8 +64,7 @@ export default function VehiclesPage() {
       // 刷新列表
       await refresh()
     } catch (err) {
-      console.error("Delete failed:", err)
-      alert("Delete failed, please try again")
+      handleError(err, "Delete failed, please try again")
     } finally {
       setDeletingIds((prev) => {
         const next = new Set(prev)
@@ -124,11 +126,11 @@ export default function VehiclesPage() {
               {isRefreshing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
           </div>
-          {error && (
-            <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
+          {[error, actionError].filter(Boolean).map((message, index) => (
+            <div key={index} className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {message}
             </div>
-          )}
+          ))}
 
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />

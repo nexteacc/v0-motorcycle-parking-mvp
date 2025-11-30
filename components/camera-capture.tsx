@@ -51,22 +51,29 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
         await videoRef.current.play()
         setIsStreaming(true)
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Camera error:", err)
       let errorMessage = "Unable to access camera"
       
-      if (err?.name === "NotAllowedError" || err?.name === "PermissionDismissedError") {
-        errorMessage = "Camera permission denied, please allow access or use gallery"
-      } else if (err?.name === "NotFoundError" || err?.name === "DevicesNotFoundError") {
-        errorMessage = "Camera not found, please use gallery"
-      } else if (err?.name === "NotReadableError" || err?.name === "TrackStartError") {
-        errorMessage = "Camera in use, close other apps or use gallery"
-      } else if (err?.name === "OverconstrainedError") {
-        errorMessage = "Camera settings not supported, please use gallery"
-      } else if (err?.message) {
-        errorMessage = `Camera error: ${err.message}, please use gallery`
-      } else {
-        errorMessage = "Unable to access camera, check permissions or use gallery"
+      // Type guard for DOMException/Error with name property
+      const isErrorWithName = (error: unknown): error is { name?: string; message?: string } => {
+        return typeof error === 'object' && error !== null
+      }
+      
+      if (isErrorWithName(err)) {
+        if (err.name === "NotAllowedError" || err.name === "PermissionDismissedError") {
+          errorMessage = "Camera permission denied, please allow access or use gallery"
+        } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+          errorMessage = "Camera not found, please use gallery"
+        } else if (err.name === "NotReadableError" || err.name === "TrackStartError") {
+          errorMessage = "Camera in use, close other apps or use gallery"
+        } else if (err.name === "OverconstrainedError") {
+          errorMessage = "Camera settings not supported, please use gallery"
+        } else if (err.message) {
+          errorMessage = `Camera error: ${err.message}, please use gallery`
+        } else {
+          errorMessage = "Unable to access camera, check permissions or use gallery"
+        }
       }
       
       setError(errorMessage)

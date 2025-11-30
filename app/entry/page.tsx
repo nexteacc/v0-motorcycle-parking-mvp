@@ -19,6 +19,7 @@ import {
 import { QRCodeDisplay } from "@/components/qr-code-display"
 import { createClient } from "@/lib/supabase/client"
 import type { Ticket } from "@/lib/types"
+import { ImageDataUrlSchema, PlateNumberSchema } from "@/lib/validations"
 
 type ViewState = "idle" | "processing" | "result" | "success"
 
@@ -128,7 +129,16 @@ export default function EntryPage() {
   }
 
   const runAnalysis = async (imageDataUrl: string) => {
-    setPhotoPreview(imageDataUrl)
+    const validation = ImageDataUrlSchema.safeParse(imageDataUrl)
+    if (!validation.success) {
+      setAnalysisError(validation.error.issues[0]?.message ?? "Invalid image data")
+      setViewState("result")
+      return
+    }
+
+    const normalizedImage = validation.data
+
+    setPhotoPreview(normalizedImage)
     setPlateNumber("")
     setAnalysisInfo(EMPTY_ANALYSIS)
     setAnalysisError(null)
@@ -138,7 +148,7 @@ export default function EntryPage() {
       const response = await fetch("/api/ocr", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: imageDataUrl }),
+        body: JSON.stringify({ image: normalizedImage }),
       })
       const data = await response.json()
 
@@ -257,12 +267,13 @@ export default function EntryPage() {
   }
 
   const handleConfirmEntry = async (forceCreate = false) => {
-    // 支持多国车牌格式，不强制转大写，只去除首尾空格
-    const finalPlate = plateNumber.trim()
-    if (!finalPlate) {
-      setFormError("Enter plate number")
+    const parsedPlate = PlateNumberSchema.safeParse(plateNumber)
+    if (!parsedPlate.success) {
+      setFormError(parsedPlate.error.issues[0]?.message ?? "Invalid plate number")
       return
     }
+
+    const finalPlate = parsedPlate.data
 
     setIsLoading(true)
     setFormError(null)

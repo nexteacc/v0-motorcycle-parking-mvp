@@ -19,13 +19,14 @@ import {
 import { QRCodeDisplay } from "@/components/qr-code-display"
 import { createClient } from "@/lib/supabase/client"
 import type { Ticket, TicketStatus } from "@/lib/types"
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler"
 
 export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const router = useRouter()
   const [ticket, setTicket] = useState<Ticket | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { error, handleError, clearError } = useErrorHandler("Operation failed")
 
   // Edit plate state
   const [isEditingPlate, setIsEditingPlate] = useState(false)
@@ -48,8 +49,9 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         .single()
 
       if (fetchError) {
-        setError("Record not found")
+        handleError(new Error("Record not found"))
       } else {
+        clearError()
         setTicket(data as Ticket)
         setEditedPlate(data.plate_number)
       }
@@ -61,7 +63,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
   const handleEditPlate = () => {
     if (ticket?.plate_modified) {
-      setError("Plate can only be modified once")
+      handleError(new Error("Plate can only be modified once"))
       return
     }
     setIsEditingPlate(true)
@@ -72,7 +74,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     if (!ticket || !editedPlate.trim()) return
 
     setIsSavingPlate(true)
-    setError(null)
+    clearError()
 
     try {
       const supabase = createClient()
@@ -105,7 +107,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
       })
       setIsEditingPlate(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Update failed")
+      handleError(err, "Update failed")
     } finally {
       setIsSavingPlate(false)
     }
@@ -120,7 +122,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     if (!ticket) return
 
     setIsExiting(true)
-    setError(null)
+    clearError()
 
     try {
       const supabase = createClient()
@@ -148,7 +150,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
       setTicket(data as Ticket)
       setShowExitDialog(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Check out failed")
+      handleError(err, "Check out failed")
     } finally {
       setIsExiting(false)
     }

@@ -11,6 +11,7 @@ import type { TicketStatus } from "@/lib/types"
 import { useTickets } from "@/lib/hooks/useTickets"
 import { formatDuration, getStatusBadgeConfig, formatDateTime } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler"
 
 type FilterStatus = "all" | TicketStatus
 
@@ -31,6 +32,7 @@ export default function HistoryPage() {
     orderBy: "entry_time",
     orderDirection: "desc",
   })
+  const { error: actionError, handleError, clearError } = useErrorHandler("Delete failed")
 
   const getStatusBadge = (status: TicketStatus) => {
     const { label, className } = getStatusBadgeConfig(status)
@@ -46,6 +48,7 @@ export default function HistoryPage() {
 
     setDeletingIds((prev) => new Set(prev).add(ticketId))
     try {
+      clearError()
       const supabase = createClient()
       const { error: deleteError } = await supabase.from("tickets").delete().eq("id", ticketId)
 
@@ -54,8 +57,7 @@ export default function HistoryPage() {
       // 刷新列表
       await refresh()
     } catch (err) {
-      console.error("Delete failed:", err)
-      alert("Delete failed, please try again")
+      handleError(err, "Delete failed, please try again")
     } finally {
       setDeletingIds((prev) => {
         const next = new Set(prev)
@@ -106,11 +108,11 @@ export default function HistoryPage() {
           </Select>
         </div>
 
-        {error && (
-          <div className="mb-4 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {error}
+        {[error, actionError].filter(Boolean).map((message, index) => (
+          <div key={index} className="mb-4 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {message}
           </div>
-        )}
+        ))}
 
         {/* List */}
         {isLoading ? (

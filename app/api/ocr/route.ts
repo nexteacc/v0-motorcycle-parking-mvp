@@ -1,8 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
+import { env } from "@/lib/env"
+import { OcrImageRequestSchema } from "@/lib/validations"
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: env.OPENAI_API_KEY,
 })
 
 const RESPONSE_SCHEMA = {
@@ -29,18 +31,7 @@ const PROMPT = `Identify the license plate number from the vehicle photo. If rec
 
 export async function POST(request: NextRequest) {
   try {
-    if (!process.env.OPENAI_API_KEY) {
-      console.error("OCR API: Missing OPENAI_API_KEY environment variable")
-      return NextResponse.json(
-        { 
-          plateNumber: null, 
-          confidence: null, 
-          color: null, 
-          error: "Server configuration error: Missing OpenAI API key" 
-        }, 
-        { status: 500 }
-      )
-    }
+    // 环境变量已在 lib/env.ts 中验证，这里不需要再次检查
 
     let requestBody
     try {
@@ -58,42 +49,32 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { image } = requestBody
-
-    if (!image || typeof image !== "string") {
+    const parsedPayload = OcrImageRequestSchema.safeParse(requestBody)
+    if (!parsedPayload.success) {
+      const message = parsedPayload.error.issues[0]?.message ?? "Invalid image data, please upload again"
+      console.error("OCR API: Invalid request payload:", parsedPayload.error.flatten())
       return NextResponse.json(
         { 
           plateNumber: null, 
           confidence: null, 
           color: null, 
-          error: "Image data missing, please upload image again" 
+          error: message
         }, 
         { status: 400 }
       )
     }
+
+    const { image } = parsedPayload.data
 
     let imageDataUrl = image
     if (!image.startsWith("data:")) {
       imageDataUrl = `data:image/jpeg;base64,${image}`
     }
-    
-    const base64 = imageDataUrl.includes(",") ? imageDataUrl.split(",")[1] : imageDataUrl
-    if (!base64 || base64.length < 100) {
-      return NextResponse.json(
-        { 
-          plateNumber: null, 
-          confidence: null, 
-          color: null, 
-          error: "Invalid image data, please upload again" 
-        }, 
-        { status: 400 }
-      )
-    }
 
     let response
     try {
       response = await openai.responses.create({
-        model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
+        model: env.OPENAI_MODEL,
         max_output_tokens: 300,
         input: [
           {
@@ -116,23 +97,30 @@ export async function POST(request: NextRequest) {
           },
         },
       })
-    } catch (apiError: any) {
+    } catch (apiError: unknown) {
+      // Type guard for error with status property
+      const isErrorWithStatus = (err: unknown): err is { status?: number; message?: string; code?: string } => {
+        return typeof err === 'object' && err !== null
+      }
+      
+      const errorDetails = isErrorWithStatus(apiError) ? apiError : {}
+      
       console.error("OCR API: OpenAI API call failed:", {
         error: apiError,
-        message: apiError?.message,
-        status: apiError?.status,
-        code: apiError?.code,
+        message: errorDetails.message,
+        status: errorDetails.status,
+        code: errorDetails.code,
       })
       
       let errorMessage = "AI recognition service temporarily unavailable, please try again later"
-      if (apiError?.status === 401) {
+      if (errorDetails.status === 401) {
         errorMessage = "Invalid API key, please contact administrator"
-      } else if (apiError?.status === 429) {
+      } else if (errorDetails.status === 429) {
         errorMessage = "Too many requests, please try again later"
-      } else if (apiError?.status === 500 || apiError?.status === 503) {
+      } else if (errorDetails.status === 500 || errorDetails.status === 503) {
         errorMessage = "AI service temporarily unavailable, please try again later"
-      } else if (apiError?.message) {
-        errorMessage = `Recognition failed: ${apiError.message}`
+      } else if (errorDetails.message) {
+        errorMessage = `Recognition failed: ${errorDetails.message}`
       }
       
       return NextResponse.json(
@@ -160,7 +148,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const textContent = outputMessage.content?.find((item: any) => item.type === "output_text")
+    const textContent = outputMessage.content?.find((item: { type?: string }) => item.type === "output_text")
     const rawText = textContent && "text" in textContent ? textContent.text : undefined
 
     if (!rawText) {
@@ -197,18 +185,21 @@ export async function POST(request: NextRequest) {
       confidence: typeof parsed.confidence === "number" ? parsed.confidence : null,
       color: parsed.color ?? null,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Internal server error, please try again later"
+    const errorStack = error instanceof Error ? error.stack : undefined
+    
     console.error("OCR API: Unexpected error:", {
       error,
-      message: error?.message,
-      stack: error?.stack,
+      message: errorMessage,
+      stack: errorStack,
     })
     return NextResponse.json(
       { 
         plateNumber: null, 
         confidence: null, 
         color: null, 
-        error: error?.message || "Internal server error, please try again later" 
+        error: errorMessage
       }, 
       { status: 500 }
     )

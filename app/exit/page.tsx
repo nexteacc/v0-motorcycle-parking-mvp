@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { QrCode, Search, Check, Undo2, Loader2, Clock, ImageIcon } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { QrCode, Search, Check, Undo2, Loader2, Clock, ImageIcon, Camera } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,12 +15,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { QRScanner } from "@/components/qr-scanner"
 import { createClient } from "@/lib/supabase/client"
 import type { Ticket } from "@/lib/types"
 import { useDebounce } from "@/lib/hooks/useDebounce"
 import { useErrorHandler } from "@/lib/hooks/useErrorHandler"
 import { formatDuration } from "@/lib/utils"
+import { ImageDataUrlSchema, QRPayloadSchema } from "@/lib/validations"
+import { ZodError } from "zod"
 
 type Mode = "select" | "qr-scan" | "upload-scan" | "search" | "confirm" | "success"
 
@@ -43,14 +44,51 @@ export default function ExitPage() {
   // 搜索防抖：延迟 400ms 执行搜索（出场页面可以稍长一点）
   const debouncedSearchQuery = useDebounce(searchQuery, 400)
 
+  // Upload 功能的 ref
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  // QR 扫码功能的 ref
+  const qrCameraInputRef = useRef<HTMLInputElement>(null)
+
   const handleQRScan = async (data: string) => {
     try {
-      const parsed = JSON.parse(data)
-      if (parsed.id) {
-        await findTicketById(parsed.id)
+      const parsedJson = JSON.parse(data)
+      const payload = QRPayloadSchema.parse(parsedJson)
+      await findTicketById(payload.id)
+    } catch (err) {
+      let message = "Invalid QR code"
+      if (err instanceof ZodError) {
+        message = err.issues[0]?.message ?? message
+      } else if (err instanceof SyntaxError) {
+        message = "QR code content is not valid JSON"
       }
-    } catch {
-      handleError(new Error("Invalid QR code"))
+      handleError(new Error(message))
+    }
+  }
+
+  // 处理系统相机拍照后的 QR 码识别（用于扫码功能）
+  const handleQRCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsLoading(true)
+    clearError()
+
+    const reader = new FileReader()
+    reader.onload = async (event) => {
+      const result = event.target?.result as string
+      if (result) {
+        await handleQRImageUpload(result)
+      }
+    }
+    reader.onerror = () => {
+      handleError(new Error("Failed to read file"))
+      setIsLoading(false)
+    }
+    reader.readAsDataURL(file)
+
+    // 重置 input，允许重复选择同一文件
+    if (e.target) {
+      e.target.value = ""
     }
   }
 
@@ -256,37 +294,81 @@ export default function ExitPage() {
     setMode("select")
   }
 
-  const handleQRImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 处理相册上传（用于 Upload 功能）
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
+    setIsLoading(true)
+    clearError()
+
     const reader = new FileReader()
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const result = event.target?.result as string
       if (result) {
-        // Use jsQR to decode from image
-        const img = new Image()
-        img.onload = async () => {
-          const canvas = document.createElement("canvas")
-          canvas.width = img.width
-          canvas.height = img.height
-          const ctx = canvas.getContext("2d")
-          if (ctx) {
-            ctx.drawImage(img, 0, 0)
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-            // Use jsQR library (should be imported at top)
-            const code = (window as any).jsQR(imageData.data, imageData.width, imageData.height)
-            if (code) {
-              handleQRScan(code.data)
-            } else {
-              handleError(new Error("QR code not recognized"))
-            }
-          }
-        }
-        img.src = result
+        await handleQRImageUpload(result)
       }
     }
+    reader.onerror = () => {
+      handleError(new Error("Failed to read file"))
+      setIsLoading(false)
+    }
     reader.readAsDataURL(file)
+
+    // 重置 input，允许重复选择同一文件
+    if (e.target) {
+      e.target.value = ""
+    }
+  }
+
+  // 统一的 QR 码图片识别处理
+  const handleQRImageUpload = async (imageDataUrl: string) => {
+    try {
+      const validation = ImageDataUrlSchema.safeParse(imageDataUrl)
+      if (!validation.success) {
+        handleError(new Error(validation.error.issues[0]?.message ?? "Invalid image data"))
+        setIsLoading(false)
+        return
+      }
+
+      const normalizedImage = validation.data
+
+      const img = new Image()
+      img.onload = async () => {
+        const canvas = document.createElement("canvas")
+        canvas.width = img.width
+        canvas.height = img.height
+        const ctx = canvas.getContext("2d")
+        if (!ctx) {
+          handleError(new Error("Failed to create canvas context"))
+          setIsLoading(false)
+          return
+        }
+
+        ctx.drawImage(img, 0, 0)
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+
+        // 正确导入 jsQR
+        const jsQR = (await import("jsqr")).default
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        })
+
+        if (code) {
+          await handleQRScan(code.data)
+        } else {
+          handleError(new Error("QR code not recognized"))
+        }
+      }
+      img.onerror = () => {
+        handleError(new Error("Failed to load image"))
+        setIsLoading(false)
+      }
+      img.src = normalizedImage
+    } catch (err) {
+      handleError(err, "Failed to scan QR code")
+      setIsLoading(false)
+    }
   }
 
 
@@ -373,15 +455,56 @@ export default function ExitPage() {
                     Scan QR
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <QRScanner onScan={handleQRScan} />
+                <CardContent className="space-y-4">
+                  <div className="relative aspect-video overflow-hidden rounded-lg bg-muted border-2 border-dashed border-muted-foreground/50 flex items-center justify-center">
+                    <div className="text-center text-muted-foreground">
+                      <QrCode className="mx-auto h-12 w-12 mb-2" />
+                      <p className="text-sm">System Camera</p>
+                      <p className="text-xs mt-1 text-muted-foreground/70">
+                        Take photo to scan QR code
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button 
+                      className="flex-1 bg-green-600 hover:bg-green-700" 
+                      onClick={() => qrCameraInputRef.current?.click()}
+                    >
+                      <Camera className="mr-2 h-5 w-5" />
+                      Camera
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <ImageIcon className="h-5 w-5" />
+                    </Button>
+                  </div>
+
+                  {/* 隐藏的相机 input - 直接触发系统相机 */}
+                  <input
+                    ref={qrCameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleQRCameraCapture}
+                  />
+
                   {isLoading && (
-                    <div className="mt-4 flex items-center justify-center gap-2 text-muted-foreground">
+                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Loading...</span>
+                      <span>Recognizing...</span>
                     </div>
                   )}
-                  <Button variant="outline" className="w-full mt-4" onClick={() => setMode("select")}>
+                  {error && (
+                    <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                      {error}
+                    </div>
+                  )}
+                  <Button variant="outline" className="w-full" onClick={() => setMode("select")}>
                     Back
                   </Button>
                 </CardContent>
@@ -399,25 +522,22 @@ export default function ExitPage() {
                 <CardContent className="space-y-4">
                   <div
                     className="relative aspect-video overflow-hidden rounded-xl border-2 border-dashed border-muted-foreground/60 bg-muted/40 flex items-center justify-center cursor-pointer hover:bg-muted/70 transition-colors"
-                    onClick={() => {
-                      const input = document.createElement("input")
-                      input.type = "file"
-                      input.accept = "image/*"
-                      input.onchange = (e) => {
-                        const target = e.target as HTMLInputElement
-                        const event = {
-                          target: { files: target.files },
-                        } as React.ChangeEvent<HTMLInputElement>
-                        handleQRImageUpload(event)
-                      }
-                      input.click()
-                    }}
+                    onClick={() => fileInputRef.current?.click()}
                   >
                     <div className="text-center">
                       <ImageIcon className="mx-auto h-12 w-12 mb-2 text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">Upload QR</p>
+                      <p className="text-xs text-muted-foreground/70 mt-1">Choose from gallery</p>
                     </div>
                   </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
+
                   {isLoading && (
                     <div className="flex items-center justify-center gap-2 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
