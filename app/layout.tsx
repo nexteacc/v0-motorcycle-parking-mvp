@@ -95,7 +95,7 @@ export default function RootLayout({
         >
           <div className="mx-auto max-w-md px-4 py-2 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden bg-muted">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden">
                 <Image src="/logo.png" alt="Parking Logo" width={36} height={36} className="object-contain" priority />
               </div>
               <div className="leading-tight">
