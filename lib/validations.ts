@@ -3,15 +3,17 @@ import { z } from "zod"
 /**
  * License plate validation
  * - trims whitespace
- * - allows alphanumeric, spaces, dashes
+ * - allows alphanumeric, common separators (spaces, dashes, dots, slashes)
+ * - supports international formats (e.g., Vietnam uses dots, US states allow slashes)
  * - length guard to avoid absurd plates
+ * - blocks dangerous characters to prevent injection attacks
  */
 export const PlateNumberSchema = z
   .string({ required_error: "Enter plate number" })
   .trim()
   .min(1, "Enter plate number")
   .max(20, "Plate number too long")
-  .regex(/^[A-Za-z0-9\-\s]+$/, "Invalid plate format")
+  .regex(/^[A-Za-z0-9\s\-\.\/]+$/, "Invalid plate format")
 
 /**
  * Data URL validation (camera/gallery capture)
