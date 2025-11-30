@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Search, Filter, Clock, Car, RefreshCw, Loader2 } from "lucide-react"
+import { Search, Filter, Clock, RefreshCw, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -91,7 +92,9 @@ export default function VehiclesPage() {
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Car className="h-5 w-5 text-green-600" />
+                <span className="flex h-6 w-6 items-center justify-center rounded bg-green-100">
+                  <Image src="/logo.png" alt="Vehicle icon" width={20} height={20} className="object-contain" />
+                </span>
                 <span className="text-sm text-muted-foreground">Current</span>
               </div>
               <span className="text-2xl font-bold text-green-600">{activeCount}</span>
@@ -145,7 +148,9 @@ export default function VehiclesPage() {
           </div>
         ) : tickets.length === 0 ? (
           <div className="text-center py-12">
-            <Car className="mx-auto h-12 w-12 text-muted-foreground/50 mb-2" />
+            <div className="mx-auto h-12 w-12 mb-2">
+              <Image src="/logo.png" alt="No vehicles" width={48} height={48} className="object-contain opacity-60" />
+            </div>
             <p className="text-muted-foreground text-sm">No records</p>
           </div>
         ) : (
@@ -172,7 +177,7 @@ export default function VehiclesPage() {
                       </div>
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded bg-muted">
-                        <Car className="h-6 w-6 text-muted-foreground" />
+                        <Image src="/logo.png" alt="Vehicle" width={24} height={24} className="object-contain opacity-70" />
                       </div>
                     )}
                     <div>

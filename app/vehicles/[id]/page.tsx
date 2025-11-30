@@ -2,8 +2,9 @@
 
 import { useState, useEffect, use } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Edit2, Clock, Calendar, Smartphone, Check, X, Loader2, AlertTriangle, LogOut, Car } from "lucide-react"
+import { ArrowLeft, Edit2, Clock, Calendar, Smartphone, Check, X, Loader2, AlertTriangle, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -261,8 +262,10 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
-                  <div className="text-center">
-                    <Car className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <div className="text-center space-y-2">
+                    <div className="mx-auto h-12 w-12">
+                      <Image src="/logo.png" alt="No photo" width={48} height={48} className="object-contain opacity-60" />
+                    </div>
                     <p className="text-sm">No photo</p>
                   </div>
                 </div>

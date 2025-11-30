@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Clock, Car, RefreshCw, Loader2, Filter } from "lucide-react"
+import { Clock, RefreshCw, Loader2, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -136,7 +137,7 @@ export default function HistoryPage() {
                       </div>
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded flex-shrink-0 bg-muted">
-                        <Car className="h-6 w-6 text-muted-foreground" />
+                        <Image src="/logo.png" alt="Vehicle" width={24} height={24} className="object-contain opacity-70" />
                       </div>
                     )}
                     <div className="min-w-0">
