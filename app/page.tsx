@@ -9,7 +9,7 @@ import { useStats } from "@/lib/hooks/useStats"
 export default function HomePage() {
   const { stats, isLoading: statsLoading } = useStats()
   const today = new Date()
-  const dateLabel = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}.${String(today.getDate()).padStart(2, "0")}`
+  const dateLabel = `${String(today.getMonth() + 1).padStart(2, "0")} · ${String(today.getDate()).padStart(2, "0")} · ${today.getFullYear()}`
 
   const quickActions = [
     { href: "/entry", title: "Check In", icon: "/checkin.png" },
@@ -24,7 +24,7 @@ export default function HomePage() {
         {/* Stats Section */}
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
           <CardHeader className="pb-2 text-center">
-            <CardTitle className="text-sm text-muted-foreground tracking-wide">{dateLabel}</CardTitle>
+            <CardTitle className="text-base font-semibold tracking-[0.3em] text-foreground">{dateLabel}</CardTitle>
           </CardHeader>
           <CardContent>
             {statsLoading ? (
