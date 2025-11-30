@@ -27,7 +27,7 @@ const RESPONSE_SCHEMA = {
   additionalProperties: false,
 } as const
 
-const PROMPT = `Identify the license plate number from the vehicle photo. If recognizable, return the complete license plate number (maintain original format); if not recognizable, return null. confidence represents confidence (0-1), 0 if not recognizable. color returns null. Output JSON only.`
+const PROMPT = `Extract the license plate number from this vehicle photo. Focus only on the license plate area. Return the complete plate number in its original format, or null if not readable. confidence is 0-1 (0 if not readable). color is null. Output JSON only.`
 
 export async function POST(request: NextRequest) {
   try {
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     try {
       response = await openai.responses.create({
         model: envServer.OPENAI_MODEL,
-        max_output_tokens: 300,
+        max_output_tokens: 100,
         input: [
           {
             role: "user",
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
               { 
                 type: "input_image", 
                 image_url: imageDataUrl,
-                detail: "auto",
+                detail: "high",
               },
             ],
           },

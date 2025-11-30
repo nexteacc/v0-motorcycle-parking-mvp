@@ -110,8 +110,8 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
 
-    // Compress image: max width 1024px, quality 0.6
-    const MAX_WIDTH = 1024
+    // Compress image: max width 800px, quality 0.6
+    const MAX_WIDTH = 800
     let width = video.videoWidth
     let height = video.videoHeight
 
@@ -141,14 +141,14 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
     reader.onload = (event) => {
       const result = event.target?.result as string
       if (result) {
-        // Compress image
-        const img = new Image()
-        img.onload = () => {
-          const canvas = document.createElement("canvas")
-          const ctx = canvas.getContext("2d")
-          if (!ctx) return
+          // Compress image
+          const img = new Image()
+          img.onload = () => {
+            const canvas = document.createElement("canvas")
+            const ctx = canvas.getContext("2d")
+            if (!ctx) return
 
-          const MAX_WIDTH = 1024
+            const MAX_WIDTH = 800
           let width = img.width
           let height = img.height
 
@@ -189,7 +189,7 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
           const ctx = canvas.getContext("2d")
           if (!ctx) return
 
-          const MAX_WIDTH = 1024
+          const MAX_WIDTH = 800
           let width = img.width
           let height = img.height
 
