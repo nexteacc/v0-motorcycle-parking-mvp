@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, Info, ChevronRight } from "lucide-react"
+import { X, Sparkles, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -54,30 +54,37 @@ export function ProductIntroToast() {
   return (
     <>
       <div 
-        className="fixed top-0 left-0 right-0 z-50 bg-yellow-50 dark:bg-yellow-900/30 border-b border-yellow-300 dark:border-yellow-700 backdrop-blur-sm"
+        className="fixed top-0 left-0 right-0 z-50 bg-yellow-400 dark:bg-yellow-500 border-b border-yellow-500 dark:border-yellow-600 shadow-lg"
         style={{
           paddingTop: `env(safe-area-inset-top, 0px)`,
         }}
       >
-        <div className="mx-auto max-w-md px-4 py-2.5">
-          <div className="flex items-center gap-2.5">
-            <Info className="h-4 w-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
-            <div className="flex-1 min-w-0">
+        <div className="mx-auto max-w-md px-4 py-3">
+          <div className="flex items-center gap-3">
+            {/* 左侧：图标 */}
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-600 dark:bg-yellow-700 flex-shrink-0 shadow-sm">
+              <Sparkles className="h-4 w-4 text-white" />
+            </div>
+            
+            {/* 中间：文案（居中显示） */}
+            <div className="flex-1 min-w-0 text-center">
               {/* 桌面端：完整文案 */}
-              <p className="hidden md:block text-xs text-yellow-900 dark:text-yellow-100 leading-tight font-medium">
+              <p className="hidden md:block text-sm text-yellow-900 dark:text-yellow-950 leading-tight font-semibold">
                 Quick vehicle check in, check out with AI
               </p>
               {/* 移动端：简短文案 */}
-              <p className="block md:hidden text-xs text-yellow-900 dark:text-yellow-100 leading-tight font-medium">
+              <p className="block md:hidden text-sm text-yellow-900 dark:text-yellow-950 leading-tight font-semibold">
                 AI-powered parking management
               </p>
             </div>
+            
+            {/* 右侧：操作按钮 */}
             <div className="flex items-center gap-1 flex-shrink-0">
               {/* 桌面端：文字按钮 */}
               <Button
                 variant="ghost"
                 size="sm"
-                className="hidden md:flex h-7 px-2.5 text-xs font-medium text-yellow-700 dark:text-yellow-300 hover:text-yellow-900 dark:hover:text-yellow-100 hover:bg-yellow-100 dark:hover:bg-yellow-800/40"
+                className="hidden md:flex h-7 px-2.5 text-xs font-medium text-yellow-900 dark:text-yellow-950 hover:text-yellow-950 dark:hover:text-yellow-950 hover:bg-yellow-300 dark:hover:bg-yellow-400"
                 onClick={handleViewDetails}
               >
                 Details
@@ -87,7 +94,7 @@ export function ProductIntroToast() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="flex md:hidden h-7 w-7 text-yellow-700 dark:text-yellow-300 hover:text-yellow-900 dark:hover:text-yellow-100 hover:bg-yellow-100 dark:hover:bg-yellow-800/40"
+                className="flex md:hidden h-7 w-7 text-yellow-900 dark:text-yellow-950 hover:text-yellow-950 dark:hover:text-yellow-950 hover:bg-yellow-300 dark:hover:bg-yellow-400"
                 onClick={handleViewDetails}
               >
                 <ChevronRight className="h-4 w-4" />
@@ -95,7 +102,7 @@ export function ProductIntroToast() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-yellow-700 dark:text-yellow-300 hover:text-yellow-900 dark:hover:text-yellow-100 hover:bg-yellow-100 dark:hover:bg-yellow-800/40"
+                className="h-7 w-7 text-yellow-900 dark:text-yellow-950 hover:text-yellow-950 dark:hover:text-yellow-950 hover:bg-yellow-300 dark:hover:bg-yellow-400"
                 onClick={handleClose}
               >
                 <X className="h-4 w-4" />

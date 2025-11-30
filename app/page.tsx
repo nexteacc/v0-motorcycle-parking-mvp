@@ -57,7 +57,15 @@ export default function HomePage() {
               <Card className="h-full cursor-pointer transition-all hover:border-primary/50 hover:shadow-md active:scale-95 bg-white dark:bg-white text-foreground dark:text-foreground">
                 <CardContent className="p-4 flex flex-col items-center text-center">
                   <div className="flex h-12 w-12 items-center justify-center mb-2 overflow-hidden bg-white dark:bg-white">
-                    <Image src={icon} alt={`${title} icon`} width={48} height={48} className="object-contain" priority style={{ filter: 'none' }} />
+                    <Image 
+                      src={icon} 
+                      alt={`${title} icon`} 
+                      width={48} 
+                      height={48} 
+                      className="object-contain dark:brightness-100 dark:contrast-100 dark:invert-0" 
+                      priority 
+                      style={{ filter: 'none' }} 
+                    />
                   </div>
                   <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-900">{title}</h3>
                 </CardContent>
