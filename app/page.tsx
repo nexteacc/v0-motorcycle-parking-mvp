@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { LogIn, LogOut, List, Clock, Loader2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useStats } from "@/lib/hooks/useStats"
@@ -18,33 +17,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <header 
-        className="sticky top-0 z-30 border-b border-border/50 bg-background/95 backdrop-blur-md"
-        style={{
-          paddingTop: `calc(1rem + env(safe-area-inset-top, 0px))`,
-        }}
-      >
-        <div className="mx-auto max-w-md px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden">
-              <Image
-                src="/logo.png"
-                alt="Parking Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight">Parking</h1>
-              <p className="text-xs text-muted-foreground">Parking Platform</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
       <main className="mx-auto max-w-md px-4 py-6">
         {/* Hero Section */}
         <div className="mb-8 text-center">

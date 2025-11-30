@@ -195,23 +195,19 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
   if (!ticket) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b bg-card">
-          <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center gap-3">
-              <Link href="/vehicles">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              </Link>
-              <h1 className="text-lg font-semibold">Details</h1>
-            </div>
+      <div className="min-h-screen bg-background pb-24">
+        <main className="container mx-auto px-4 py-6 text-center space-y-6">
+          <div className="flex items-center gap-3">
+            <Link href="/vehicles">
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            <span className="text-sm font-medium text-muted-foreground">Details</span>
           </div>
-        </header>
-        <main className="container mx-auto px-4 py-12 text-center">
-          <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground/50 mb-2" />
+          <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <p className="text-muted-foreground">{error || "Record not found"}</p>
-          <Button className="mt-4" asChild>
+          <Button className="mt-2" asChild>
             <Link href="/vehicles">Back</Link>
           </Button>
         </main>
@@ -221,28 +217,18 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header 
-        className="border-b bg-card sticky top-0 z-10"
-        style={{
-          paddingTop: `calc(0.75rem + env(safe-area-inset-top, 0px))`,
-        }}
-      >
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link href="/vehicles">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              </Link>
-              <h1 className="text-lg font-semibold">Details</h1>
-            </div>
-            {getStatusBadge(ticket.status)}
-          </div>
-        </div>
-      </header>
-
       <main className="container mx-auto px-4 py-6 max-w-lg space-y-4 pb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/vehicles">
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            <span className="text-sm font-medium text-muted-foreground">Details</span>
+          </div>
+          {getStatusBadge(ticket.status)}
+        </div>
         {/* Photo - Always show photo section */}
         <Card>
           <CardContent className="p-0">

@@ -80,23 +80,12 @@ export default function VehiclesPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header 
-        className="sticky top-0 z-30 border-b border-border/50 bg-background/95 backdrop-blur-md"
-        style={{
-          paddingTop: `calc(0.75rem + env(safe-area-inset-top, 0px))`,
-        }}
-      >
-        <div className="mx-auto max-w-md px-4 py-3">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg font-semibold text-foreground">Vehicles</h1>
-            <Button variant="ghost" size="icon" onClick={refresh} disabled={isRefreshing}>
-              <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} />
-            </Button>
-          </div>
+      <main className="mx-auto max-w-md px-4 py-4 space-y-4">
+        <div className="flex justify-end">
+          <Button variant="ghost" size="icon" onClick={refresh} disabled={isRefreshing}>
+            <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} />
+          </Button>
         </div>
-      </header>
-
-      <main className="mx-auto max-w-md px-4 py-4">
         {/* Stats */}
         <Card className="mb-4 bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-200/50">
           <CardContent className="py-4">

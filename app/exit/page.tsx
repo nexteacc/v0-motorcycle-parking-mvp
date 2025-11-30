@@ -374,17 +374,6 @@ export default function ExitPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header 
-        className="border-b bg-card/50 backdrop-blur-md sticky top-0 z-10"
-        style={{
-          paddingTop: `calc(0.75rem + env(safe-area-inset-top, 0px))`,
-        }}
-      >
-        <div className="mx-auto max-w-md px-4 py-3">
-          <h1 className="text-lg font-semibold text-foreground">Check Out</h1>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-md px-4 py-6 space-y-4">
         {mode === "select" && (
           <>

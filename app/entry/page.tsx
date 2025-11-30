@@ -346,17 +346,6 @@ export default function EntryPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header 
-        className="sticky top-0 z-10 border-b bg-card/50 backdrop-blur-md"
-        style={{
-          paddingTop: `calc(0.75rem + env(safe-area-inset-top, 0px))`,
-        }}
-      >
-        <div className="mx-auto max-w-md px-4 py-3">
-          <h1 className="text-lg font-semibold text-foreground">Check In</h1>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-md px-4 py-6 space-y-4">
         {/* 只在初始状态（idle）且没有照片时显示采集卡片 */}
         {viewState === "idle" && !photoPreview && (

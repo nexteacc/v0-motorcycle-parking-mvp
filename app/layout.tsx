@@ -1,5 +1,7 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
+import Link from "next/link"
+import Image from "next/image"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
@@ -91,7 +93,16 @@ export default function RootLayout({
             paddingTop: `calc(0.5rem + env(safe-area-inset-top, 0px))`,
           }}
         >
-          <div className="mx-auto max-w-md px-4 py-2 flex items-center justify-end">
+          <div className="mx-auto max-w-md px-4 py-2 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden bg-muted">
+                <Image src="/logo.png" alt="Parking Logo" width={36} height={36} className="object-contain" priority />
+              </div>
+              <div className="leading-tight">
+                <p className="text-sm font-semibold text-foreground">Parking</p>
+                <p className="text-[10px] text-muted-foreground">Platform</p>
+              </div>
+            </Link>
             <ThemeToggle />
           </div>
         </header>
