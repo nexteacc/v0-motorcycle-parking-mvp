@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
-import { env } from "@/lib/env"
+import { envServer } from "@/lib/env-server"
 import { OcrImageRequestSchema } from "@/lib/validations"
 
 const openai = new OpenAI({
-  apiKey: env.OPENAI_API_KEY,
+  apiKey: envServer.OPENAI_API_KEY,
 })
 
 const RESPONSE_SCHEMA = {
@@ -31,7 +31,7 @@ const PROMPT = `Identify the license plate number from the vehicle photo. If rec
 
 export async function POST(request: NextRequest) {
   try {
-    // 环境变量已在 lib/env.ts 中验证，这里不需要再次检查
+    // 环境变量已在服务器端 env 校验，这里不需要再次检查
 
     let requestBody
     try {
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     let response
     try {
       response = await openai.responses.create({
-        model: env.OPENAI_MODEL,
+        model: envServer.OPENAI_MODEL,
         max_output_tokens: 300,
         input: [
           {
