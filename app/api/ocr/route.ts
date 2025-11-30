@@ -20,14 +20,14 @@ const RESPONSE_SCHEMA = {
     },
     color: {
       type: ["string", "null"],
-      description: "Vehicle color",
+      description: "Vehicle color (e.g., red, blue, white, black, silver, gray). Return null if not identifiable.",
     },
   },
   required: ["plate_number", "confidence", "color"],
   additionalProperties: false,
 } as const
 
-const PROMPT = `Extract the license plate number from this vehicle photo. Focus only on the license plate area. Return the complete plate number in its original format, or null if not readable. confidence is 0-1 (0 if not readable). color is null. Output JSON only.`
+const PROMPT = `Extract the license plate number and vehicle color from this vehicle photo. Focus on the license plate area for the plate number, and identify the vehicle's main color. Return the complete plate number in its original format, or null if not readable. confidence is 0-1 (0 if not readable). color should be the vehicle's main color (e.g., red, blue, white, black, silver, gray) or null if not identifiable. Output JSON only.`
 
 export async function POST(request: NextRequest) {
   try {
