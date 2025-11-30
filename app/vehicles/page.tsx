@@ -103,7 +103,7 @@ export default function VehiclesPage() {
   }
 
   const handleCardTap = (ticketId: number) => {
-    router.push(`/vehicles/${ticketId}`)
+    router.push(`/vehicles/${ticketId}?from=vehicles`)
   }
 
   return (

@@ -94,7 +94,7 @@ export default function HistoryPage() {
   }
 
   const handleCardTap = (ticketId: number) => {
-    router.push(`/vehicles/${ticketId}`)
+    router.push(`/vehicles/${ticketId}?from=history`)
   }
 
   return (

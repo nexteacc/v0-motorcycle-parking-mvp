@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft, Edit2, Clock, Calendar, Smartphone, Check, X, Loader2, AlertTriangle, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,6 +25,9 @@ import { useErrorHandler } from "@/lib/hooks/useErrorHandler"
 export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const fromParam = searchParams.get("from") || "vehicles"
+  const fromPage = fromParam === "history" ? "history" : "vehicles"
   const [ticket, setTicket] = useState<Ticket | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const { error, handleError, clearError } = useErrorHandler("Operation failed")
@@ -147,7 +150,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
       setTicket(data as Ticket)
       setShowExitDialog(false)
-      router.push("/vehicles")
+      router.push(fromPage === "history" ? "/history" : "/vehicles")
     } catch (err) {
       handleError(err, "Check out failed")
     } finally {
@@ -193,11 +196,12 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
   }
 
   if (!ticket) {
+    const backUrl = fromPage === "history" ? "/history" : "/vehicles"
     return (
       <div className="min-h-screen bg-background pb-24">
         <main className="container mx-auto px-4 py-6 text-center space-y-6">
           <div className="flex items-center gap-3">
-            <Link href="/vehicles">
+            <Link href={backUrl}>
               <Button variant="ghost" size="icon">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
@@ -207,7 +211,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
           <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <p className="text-muted-foreground">{error || "Record not found"}</p>
           <Button className="mt-2" asChild>
-            <Link href="/vehicles">Back</Link>
+            <Link href={backUrl}>Back</Link>
           </Button>
         </main>
       </div>
@@ -219,7 +223,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
       <main className="container mx-auto px-4 py-6 max-w-lg space-y-4 pb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/vehicles">
+            <Link href={fromPage === "history" ? "/history" : "/vehicles"}>
               <Button variant="ghost" size="icon">
                 <ArrowLeft className="h-5 w-5" />
               </Button>

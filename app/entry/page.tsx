@@ -318,7 +318,7 @@ export default function EntryPage() {
 
   const handleViewDuplicate = () => {
     if (duplicateTicket) {
-      router.push(`/vehicles/${duplicateTicket.id}`)
+      router.push(`/vehicles/${duplicateTicket.id}?from=vehicles`)
     }
   }
 
