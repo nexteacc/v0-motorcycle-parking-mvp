@@ -9,6 +9,7 @@ import { BottomNav } from "@/components/bottom-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PWAInstaller } from "@/components/pwa-installer"
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration"
+import { ProductIntroToast } from "@/components/product-intro-toast"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -87,9 +88,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased">
+        <ProductIntroToast />
         <header 
-          className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur-md"
+          className="sticky z-40 border-b border-border/50 bg-background/95 backdrop-blur-md"
           style={{
+            top: `calc(env(safe-area-inset-top, 0px) + var(--toast-height, 0px))`,
             paddingTop: `calc(0.5rem + env(safe-area-inset-top, 0px))`,
           }}
         >

@@ -24,7 +24,7 @@ export default function HomePage() {
         {/* Stats Section */}
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
           <CardHeader className="pb-2 text-center">
-            <CardTitle className="text-base font-semibold tracking-[0.3em] text-foreground">{dateLabel}</CardTitle>
+            <CardTitle className="text-lg font-semibold tracking-[0.3em] text-foreground">{dateLabel}</CardTitle>
           </CardHeader>
           <CardContent>
             {statsLoading ? (
@@ -54,12 +54,12 @@ export default function HomePage() {
         <div className="grid gap-3 grid-cols-2">
           {quickActions.map(({ href, icon, title }) => (
             <Link key={href} href={href}>
-              <Card className="h-full cursor-pointer transition-all hover:border-primary/50 hover:shadow-md active:scale-95">
+              <Card className="h-full cursor-pointer transition-all hover:border-primary/50 hover:shadow-md active:scale-95 bg-white dark:bg-white text-foreground dark:text-foreground">
                 <CardContent className="p-4 flex flex-col items-center text-center">
-                  <div className="flex h-12 w-12 items-center justify-center mb-2 overflow-hidden">
-                    <Image src={icon} alt={`${title} icon`} width={48} height={48} className="object-contain" priority />
+                  <div className="flex h-12 w-12 items-center justify-center mb-2 overflow-hidden bg-white dark:bg-white">
+                    <Image src={icon} alt={`${title} icon`} width={48} height={48} className="object-contain" priority style={{ filter: 'none' }} />
                   </div>
-                  <h3 className="font-semibold text-sm">{title}</h3>
+                  <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-900">{title}</h3>
                 </CardContent>
               </Card>
             </Link>
