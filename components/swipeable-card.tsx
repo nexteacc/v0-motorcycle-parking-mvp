@@ -27,15 +27,14 @@ export function SwipeableCard({
   const startXRef = useRef<number>(0)
   const startYRef = useRef<number>(0)
   const currentXRef = useRef<number>(0)
-  const isHorizontalSwipeRef = useRef<boolean | null>(null) // 判断是否为水平滑动
+  const isHorizontalSwipeRef = useRef<boolean | null>(null)
   const hasTappedRef = useRef(false)
 
-  const DELETE_BUTTON_WIDTH = 72 // 删除按钮宽度
-  const SWIPE_THRESHOLD = 10 // 判定为滑动的最小距离
-  const VELOCITY_THRESHOLD = 0.3 // 速度阈值，用于快速滑动判定
+  const DELETE_BUTTON_WIDTH = 72
+  const SWIPE_THRESHOLD = 10
+  const VELOCITY_THRESHOLD = 0.3
   const startTimeRef = useRef<number>(0)
 
-  // 使用 useCallback 优化性能
   const handleReset = useCallback(() => {
     setTranslateX(0)
   }, [])
@@ -54,7 +53,7 @@ export function SwipeableCard({
       startYRef.current = touch.clientY
       currentXRef.current = touch.clientX
       startTimeRef.current = Date.now()
-      isHorizontalSwipeRef.current = null // 重置方向判定
+      isHorizontalSwipeRef.current = null
       hasTappedRef.current = false
       setIsDragging(true)
     }
@@ -68,46 +67,36 @@ export function SwipeableCard({
       const deltaX = touch.clientX - startXRef.current
       const deltaY = touch.clientY - startYRef.current
       
-      // 首次移动时判断滑动方向
       if (isHorizontalSwipeRef.current === null) {
         const absX = Math.abs(deltaX)
         const absY = Math.abs(deltaY)
         
-        // 需要移动超过阈值才判定方向
         if (absX > SWIPE_THRESHOLD || absY > SWIPE_THRESHOLD) {
-          // 水平滑动角度小于 30 度认为是水平滑动
           isHorizontalSwipeRef.current = absX > absY * 1.5
         }
       }
       
-      // 如果不是水平滑动，不处理
       if (isHorizontalSwipeRef.current === false) {
         return
       }
       
-      // 如果是水平滑动，阻止默认行为（防止页面滚动）
       if (isHorizontalSwipeRef.current === true) {
         e.preventDefault()
       }
       
       currentXRef.current = touch.clientX
       
-      // 计算新位置
       let newTranslateX = deltaX
       
-      // 如果卡片已经展开，从当前位置开始计算
       if (translateX < 0) {
         newTranslateX = translateX + deltaX
       }
       
-      // 限制滑动范围：最多滑出删除按钮宽度，最少回到原位
       newTranslateX = Math.max(-DELETE_BUTTON_WIDTH, Math.min(0, newTranslateX))
       
-      // 添加阻尼效果：超过边界时减缓滑动
       if (deltaX > 0 && translateX >= 0) {
-        // 向右滑动但已在原位，添加阻尼
         newTranslateX = deltaX * 0.2
-        newTranslateX = Math.min(20, newTranslateX) // 最多超出 20px
+        newTranslateX = Math.min(20, newTranslateX)
       }
       
       setTranslateX(newTranslateX)
@@ -120,37 +109,28 @@ export function SwipeableCard({
       
       const deltaX = currentXRef.current - startXRef.current
       const deltaTime = Date.now() - startTimeRef.current
-      const velocity = Math.abs(deltaX) / deltaTime // px/ms
+      const velocity = Math.abs(deltaX) / deltaTime
       
-      // 如果几乎没有移动，认为是点击
       if (Math.abs(deltaX) < SWIPE_THRESHOLD && isHorizontalSwipeRef.current === null) {
-        // 如果卡片已展开，点击时收起
         if (translateX < 0) {
           handleReset()
         } else if (onTap) {
-          // 否则触发点击事件
           hasTappedRef.current = true
           onTap()
         }
         return
       }
       
-      // 如果不是水平滑动，重置位置
       if (isHorizontalSwipeRef.current === false) {
         return
       }
       
-      // 根据速度和位置决定最终状态
       const shouldOpen = 
-        // 快速向左滑动
         (velocity > VELOCITY_THRESHOLD && deltaX < 0) ||
-        // 慢速滑动但超过一半
         (translateX < -DELETE_BUTTON_WIDTH / 2)
       
       const shouldClose = 
-        // 快速向右滑动
         (velocity > VELOCITY_THRESHOLD && deltaX > 0) ||
-        // 慢速滑动但不足一半
         (translateX >= -DELETE_BUTTON_WIDTH / 2)
       
       if (shouldOpen && !shouldClose) {
@@ -160,7 +140,6 @@ export function SwipeableCard({
       }
     }
 
-    // 使用 passive: false 以便可以调用 preventDefault
     card.addEventListener("touchstart", handleTouchStart, { passive: true })
     card.addEventListener("touchmove", handleTouchMove, { passive: false })
     card.addEventListener("touchend", handleTouchEnd, { passive: true })
@@ -180,19 +159,16 @@ export function SwipeableCard({
       setTranslateX(0)
     } catch (error) {
       console.error("Delete failed:", error)
-      // 删除失败时收起卡片
       setTranslateX(0)
     } finally {
       setIsDeleting(false)
     }
   }
 
-  // 计算删除按钮的透明度，基于滑动距离
   const deleteButtonOpacity = Math.min(1, Math.abs(translateX) / (DELETE_BUTTON_WIDTH * 0.5))
 
   return (
     <div className="relative overflow-hidden rounded-lg">
-      {/* 删除按钮背景 - z-index 较低，被卡片遮挡 */}
       <div
         className="absolute inset-y-0 right-0 flex items-center justify-center bg-destructive"
         style={{ 
@@ -212,7 +188,6 @@ export function SwipeableCard({
         </Button>
       </div>
 
-      {/* 可滑动的卡片 - z-index 较高，覆盖删除按钮 */}
       <div
         ref={cardRef}
         className="relative z-10 bg-background"
@@ -222,7 +197,6 @@ export function SwipeableCard({
           willChange: 'transform',
         }}
         onClick={(e) => {
-          // 如果已经滑出，点击卡片区域时恢复
           if (translateX < 0) {
             e.preventDefault()
             e.stopPropagation()
@@ -233,7 +207,7 @@ export function SwipeableCard({
         <Card 
           className="border shadow-sm"
           style={{
-            touchAction: 'pan-y', // 允许垂直滚动，水平由我们控制
+            touchAction: 'pan-y',
             WebkitUserSelect: 'none',
             userSelect: 'none',
           }}

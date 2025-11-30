@@ -6,7 +6,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // PWA 支持：确保 manifest 和 service worker 文件可以被正确提供
   async headers() {
     return [
       {

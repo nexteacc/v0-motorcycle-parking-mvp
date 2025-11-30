@@ -16,10 +16,8 @@ export function ProductIntroToast() {
   const [showDialog, setShowDialog] = useState(false)
 
   useEffect(() => {
-    // 初始化 CSS 变量
     document.documentElement.style.setProperty('--toast-height', '0px')
     
-    // 检查是否已经关闭过
     const dismissed = localStorage.getItem("product-intro-dismissed")
     if (!dismissed) {
       setShowToast(true)
@@ -36,7 +34,6 @@ export function ProductIntroToast() {
   }
 
   useEffect(() => {
-    // 设置 CSS 变量来控制 Header 位置
     if (showToast) {
       document.documentElement.style.setProperty('--toast-height', '3.5rem')
     } else {
@@ -44,7 +41,6 @@ export function ProductIntroToast() {
     }
     
     return () => {
-      // 组件卸载时清理
       document.documentElement.style.setProperty('--toast-height', '0px')
     }
   }, [showToast])
@@ -59,28 +55,22 @@ export function ProductIntroToast() {
           paddingTop: `env(safe-area-inset-top, 0px)`,
         }}
       >
-        <div className="mx-auto max-w-md px-4 py-3">
+        <div className="mx-auto max-w-md md:max-w-4xl lg:max-w-6xl px-4 py-3">
           <div className="flex items-center gap-3">
-            {/* 左侧：图标 */}
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-600 dark:bg-yellow-700 flex-shrink-0 shadow-sm">
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             
-            {/* 中间：文案（居中显示） */}
-            <div className="flex-1 min-w-0 text-center">
-              {/* 桌面端：完整文案 */}
-              <p className="hidden md:block text-sm text-yellow-900 dark:text-yellow-950 leading-tight font-semibold">
+            <div className="flex-1 text-center md:text-left">
+              <p className="hidden md:block text-sm text-yellow-900 dark:text-yellow-950 leading-tight font-semibold whitespace-nowrap">
                 Quick vehicle check in, check out with AI
               </p>
-              {/* 移动端：简短文案 */}
               <p className="block md:hidden text-sm text-yellow-900 dark:text-yellow-950 leading-tight font-semibold">
                 AI-powered parking management
               </p>
             </div>
             
-            {/* 右侧：操作按钮 */}
             <div className="flex items-center gap-1 flex-shrink-0">
-              {/* 桌面端：文字按钮 */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -90,7 +80,6 @@ export function ProductIntroToast() {
                 Details
                 <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
               </Button>
-              {/* 移动端：只显示箭头图标 */}
               <Button
                 variant="ghost"
                 size="icon"

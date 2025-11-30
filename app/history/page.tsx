@@ -75,7 +75,6 @@ export default function HistoryPage() {
 
       if (deleteError) throw deleteError
 
-      // 刷新列表
       await refresh()
       setTicketToDelete(null)
     } catch (err) {
@@ -106,7 +105,6 @@ export default function HistoryPage() {
             <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} />
           </Button>
         </div>
-        {/* Status Filter */}
         <div className="mb-4 flex items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as FilterStatus)}>
@@ -129,7 +127,6 @@ export default function HistoryPage() {
           </div>
         ))}
 
-        {/* List */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -189,7 +186,6 @@ export default function HistoryPage() {
         )}
       </main>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog 
         open={showDeleteDialog} 
         onOpenChange={(open) => {

@@ -38,15 +38,11 @@ export default function ExitPage() {
 
   const deviceId = typeof window !== "undefined" ? localStorage.getItem("device_id") || "unknown" : "unknown"
   
-  // 错误处理 Hook
   const { error, handleError, clearError } = useErrorHandler("Failed")
   
-  // 搜索防抖：延迟 400ms 执行搜索（出场页面可以稍长一点）
   const debouncedSearchQuery = useDebounce(searchQuery, 400)
 
-  // Upload 功能的 ref
   const fileInputRef = useRef<HTMLInputElement>(null)
-  // QR 扫码功能的 ref
   const qrCameraInputRef = useRef<HTMLInputElement>(null)
 
   const handleQRScan = async (data: string) => {
@@ -65,7 +61,6 @@ export default function ExitPage() {
     }
   }
 
-  // 处理系统相机拍照后的 QR 码识别（用于扫码功能）
   const handleQRCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -86,7 +81,6 @@ export default function ExitPage() {
     }
     reader.readAsDataURL(file)
 
-    // 重置 input，允许重复选择同一文件
     if (e.target) {
       e.target.value = ""
     }
@@ -136,7 +130,7 @@ export default function ExitPage() {
         .select("id, plate_number, entry_time, exit_time, photo_url, vehicle_color, status, device_id, parking_lot_id, plate_modified, original_plate_number, created_at, updated_at")
         .eq("parking_lot_id", "default")
         .eq("status", "active")
-        .ilike("plate_number", `%${query}%`) // 使用原始查询，Supabase 的 ilike 不区分大小写
+        .ilike("plate_number", `%${query}%`)
         .order("entry_time", { ascending: false })
         .limit(10)
 
@@ -155,14 +149,12 @@ export default function ExitPage() {
     }
   }
 
-  // 防抖搜索：当防抖后的搜索关键词变化时，执行搜索
   useEffect(() => {
     if (mode === "search") {
       performSearch(debouncedSearchQuery)
     }
   }, [debouncedSearchQuery, mode])
 
-  // 手动搜索（保留用于按钮点击）
   const handleSearch = () => {
     performSearch(searchQuery)
   }
@@ -294,7 +286,6 @@ export default function ExitPage() {
     setMode("select")
   }
 
-  // 处理相册上传（用于 Upload 功能）
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -315,13 +306,11 @@ export default function ExitPage() {
     }
     reader.readAsDataURL(file)
 
-    // 重置 input，允许重复选择同一文件
     if (e.target) {
       e.target.value = ""
     }
   }
 
-  // 统一的 QR 码图片识别处理
   const handleQRImageUpload = async (imageDataUrl: string) => {
     try {
       const validation = ImageDataUrlSchema.safeParse(imageDataUrl)
@@ -348,7 +337,6 @@ export default function ExitPage() {
         ctx.drawImage(img, 0, 0)
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
 
-        // 正确导入 jsQR
         const jsQR = (await import("jsqr")).default
         const code = jsQR(imageData.data, imageData.width, imageData.height, {
           inversionAttempts: "dontInvert",
@@ -476,7 +464,6 @@ export default function ExitPage() {
                     </Button>
                   </div>
 
-                  {/* 隐藏的相机 input - 直接触发系统相机 */}
                   <input
                     ref={qrCameraInputRef}
                     type="file"
@@ -734,7 +721,6 @@ export default function ExitPage() {
         )}
       </main>
 
-      {/* Undo Confirmation Dialog */}
       <Dialog open={showUndoDialog} onOpenChange={setShowUndoDialog}>
         <DialogContent>
           <DialogHeader>

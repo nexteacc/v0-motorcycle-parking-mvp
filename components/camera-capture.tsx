@@ -8,21 +8,20 @@ import { Button } from "@/components/ui/button"
 
 interface CameraCaptureProps {
   onCapture: (imageDataUrl: string) => void
-  useNativeCamera?: boolean // 新增：是否使用原生相机
+  useNativeCamera?: boolean
 }
 
 export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const nativeCameraInputRef = useRef<HTMLInputElement>(null) // 新增：原生相机 input
+  const nativeCameraInputRef = useRef<HTMLInputElement>(null)
   const [isStreaming, setIsStreaming] = useState(false)
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment")
   const [error, setError] = useState<string | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [isIOS, setIsIOS] = useState(false)
 
-  // 检测是否为 iOS
   useEffect(() => {
     setIsIOS(/iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()))
   }, [])
@@ -92,7 +91,6 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
     setIsStreaming(false)
   }, [])
 
-  // 如果使用原生相机，就不启动 WebRTC 流
   useEffect(() => {
     if (!useNativeCamera && !isIOS) {
       startCamera()
@@ -135,7 +133,6 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
     setFacingMode((prev) => (prev === "user" ? "environment" : "user"))
   }
 
-  // 处理原生相机拍照（iOS/Android）
   const handleNativeCamera = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -172,13 +169,11 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
     }
     reader.readAsDataURL(file)
     
-    // 重置 input，允许重复选择同一文件
     if (e.target) {
       e.target.value = ''
     }
   }
 
-  // 处理相册上传
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -217,7 +212,6 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
     reader.readAsDataURL(file)
   }
 
-  // 如果使用原生相机（iOS 推荐），直接显示按钮
   if (useNativeCamera || isIOS) {
     return (
       <div className="space-y-4">
@@ -234,7 +228,6 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
         </div>
 
         <div className="flex gap-3">
-          {/* 原生相机按钮 - iOS/Android 会直接打开系统相机 App */}
           <Button 
             className="flex-1 bg-green-600 hover:bg-green-700" 
             onClick={() => nativeCameraInputRef.current?.click()}
@@ -243,13 +236,11 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
             {isIOS ? "Camera" : "Capture"}
           </Button>
 
-          {/* 相册选择 */}
           <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
             <ImageIcon className="h-5 w-5" />
           </Button>
         </div>
 
-        {/* 原生相机 input - capture="environment" 表示后置摄像头 */}
         <input 
           ref={nativeCameraInputRef} 
           type="file" 
@@ -259,7 +250,6 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
           onChange={handleNativeCamera} 
         />
         
-        {/* 相册选择 input */}
         <input 
           ref={fileInputRef} 
           type="file" 
@@ -271,7 +261,6 @@ export function CameraCapture({ onCapture, useNativeCamera = false }: CameraCapt
     )
   }
 
-  // 否则使用 WebRTC 浏览器内相机（桌面端或 Android 非原生模式）
   return (
     <div className="space-y-4">
       <div className="relative aspect-video overflow-hidden rounded-lg bg-black">

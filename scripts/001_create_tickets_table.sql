@@ -20,7 +20,6 @@ CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);
 CREATE INDEX IF NOT EXISTS idx_tickets_parking_lot_id ON tickets(parking_lot_id);
 CREATE INDEX IF NOT EXISTS idx_tickets_entry_time ON tickets(entry_time);
 
--- Create operation_logs table for audit trail (撤销操作等)
 CREATE TABLE IF NOT EXISTS operation_logs (
   id SERIAL PRIMARY KEY,
   ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,

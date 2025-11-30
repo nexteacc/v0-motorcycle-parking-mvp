@@ -29,12 +29,10 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
   const [isLoading, setIsLoading] = useState(true)
   const { error, handleError, clearError } = useErrorHandler("Operation failed")
 
-  // Edit plate state
   const [isEditingPlate, setIsEditingPlate] = useState(false)
   const [editedPlate, setEditedPlate] = useState("")
   const [isSavingPlate, setIsSavingPlate] = useState(false)
 
-  // Exit dialog
   const [showExitDialog, setShowExitDialog] = useState(false)
   const [isExiting, setIsExiting] = useState(false)
 
@@ -91,7 +89,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
       if (updateError) throw updateError
 
-      // Log the operation
       await supabase.from("operation_logs").insert({
         ticket_id: ticket.id,
         operation_type: "modify_plate",
@@ -230,7 +227,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
           </div>
           {getStatusBadge(ticket.status)}
         </div>
-        {/* Photo - Always show photo section */}
         <Card>
           <CardContent className="p-0">
             <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
@@ -241,7 +237,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                   className="h-full w-full object-cover"
                   loading="eager"
                   onError={(e) => {
-                    // 如果图片加载失败，显示占位符
                     const target = e.target as HTMLImageElement
                     target.style.display = 'none'
                     const container = target.parentElement
@@ -274,7 +269,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
           </CardContent>
         </Card>
 
-        {/* Plate Number */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Plate</CardTitle>
@@ -314,7 +308,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
           </CardContent>
         </Card>
 
-        {/* Time Info */}
         <Card>
           <CardContent className="py-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -357,7 +350,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
           </CardContent>
         </Card>
 
-        {/* QR Code for active tickets */}
         {ticket.status === "active" && (
           <Card>
             <CardHeader>
@@ -369,7 +361,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
           </Card>
         )}
 
-        {/* Device Info */}
         {ticket.device_id && (
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
             <Smartphone className="h-3 w-3" />
@@ -377,10 +368,8 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
           </div>
         )}
 
-        {/* Error Message */}
         {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
-        {/* Action Button */}
         {ticket.status === "active" && (
           <Button className="w-full bg-orange-600 hover:bg-orange-700" onClick={() => setShowExitDialog(true)}>
             <LogOut className="mr-2 h-4 w-4" />
@@ -389,7 +378,6 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         )}
       </main>
 
-      {/* Exit Confirmation Dialog */}
       <Dialog open={showExitDialog} onOpenChange={setShowExitDialog}>
         <DialogContent>
           <DialogHeader>

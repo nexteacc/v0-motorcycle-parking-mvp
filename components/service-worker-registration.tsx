@@ -10,20 +10,17 @@ export function ServiceWorkerRegistration() {
     ) {
       let registration: ServiceWorkerRegistration | null = null
 
-      // 注册 Service Worker
       navigator.serviceWorker
         .register("/sw.js", {
           scope: "/",
-          updateViaCache: "none", // 禁用 Service Worker 脚本的缓存
+          updateViaCache: "none",
         })
         .then((reg) => {
           registration = reg
           console.log("[PWA] Service Worker registered:", reg.scope)
 
-          // 立即检查更新
           reg.update()
 
-          // 监听更新发现
           reg.addEventListener("updatefound", () => {
             const newWorker = reg.installing
             if (newWorker) {
@@ -32,7 +29,6 @@ export function ServiceWorkerRegistration() {
                   newWorker.state === "installed" &&
                   navigator.serviceWorker.controller
                 ) {
-                  // 新版本已安装，自动激活并刷新
                   console.log("[PWA] New version available, activating...")
                   newWorker.postMessage({ type: "SKIP_WAITING" })
                 }
@@ -44,7 +40,6 @@ export function ServiceWorkerRegistration() {
           console.error("[PWA] Service Worker registration failed:", error)
         })
 
-      // 监听 Service Worker 控制权变化（自动刷新）
       let refreshing = false
       navigator.serviceWorker.addEventListener("controllerchange", () => {
         if (!refreshing) {
@@ -54,24 +49,20 @@ export function ServiceWorkerRegistration() {
         }
       })
 
-      // 定期检查更新（每次页面可见时检查）
       const checkForUpdates = () => {
         if (registration) {
           registration.update()
         }
       }
 
-      // 页面可见时检查更新
       document.addEventListener("visibilitychange", () => {
         if (!document.hidden) {
           checkForUpdates()
         }
       })
 
-      // 页面聚焦时检查更新
       window.addEventListener("focus", checkForUpdates)
 
-      // 定期检查更新（每 60 秒）
       const updateInterval = setInterval(checkForUpdates, 60000)
 
       return () => {

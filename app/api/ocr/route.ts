@@ -31,8 +31,6 @@ const PROMPT = `Identify the license plate number from the vehicle photo. If rec
 
 export async function POST(request: NextRequest) {
   try {
-    // 环境变量已在服务器端 env 校验，这里不需要再次检查
-
     let requestBody
     try {
       requestBody = await request.json()

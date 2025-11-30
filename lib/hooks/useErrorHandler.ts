@@ -7,11 +7,6 @@ interface ErrorHandlerReturn {
   clearError: () => void
 }
 
-/**
- * 统一的错误处理 Hook
- * @param defaultMessage 默认错误消息
- * @returns 错误状态和处理方法
- */
 export function useErrorHandler(defaultMessage: string = "Failed"): ErrorHandlerReturn {
   const [error, setError] = useState<string | null>(null)
 

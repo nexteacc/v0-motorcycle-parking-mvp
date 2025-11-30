@@ -3,7 +3,6 @@ const CACHE_VERSION = 'v3'
 const STATIC_CACHE = `motorcycle-parking-static-${CACHE_VERSION}`
 const RUNTIME_CACHE = `motorcycle-parking-runtime-${CACHE_VERSION}`
 
-// 需要缓存的静态资源（不再缓存 HTML 路由，避免旧版本一直命中）
 const STATIC_ASSETS = [
   '/icon-light-32x32.png',
   '/icon-dark-32x32.png',
@@ -13,7 +12,6 @@ const STATIC_ASSETS = [
   '/favicon.ico',
 ]
 
-// 安装 Service Worker
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installing...')
   event.waitUntil(
@@ -24,11 +22,9 @@ self.addEventListener('install', (event) => {
       })
     })
   )
-  // 立即激活新的 Service Worker
   self.skipWaiting()
 })
 
-// 激活 Service Worker
 self.addEventListener('activate', (event) => {
   console.log('[Service Worker] Activating...')
   event.waitUntil(
@@ -36,7 +32,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames
           .filter((cacheName) => {
-            // 删除旧版本的缓存
             return (
               cacheName.startsWith('motorcycle-parking-') &&
               cacheName !== STATIC_CACHE &&
@@ -50,23 +45,19 @@ self.addEventListener('activate', (event) => {
       )
     })
   )
-  // 立即控制所有客户端
   return self.clients.claim()
 })
 
-// 拦截网络请求
 self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
 
-  // 跳过非 GET 请求和跨域请求
   if (request.method !== 'GET' || url.origin !== location.origin) {
     return
   }
 
   const acceptHeader = request.headers.get('accept') || ''
 
-  // HTML 页面使用网络优先策略，确保发布后用户拉到最新版本
   if (acceptHeader.includes('text/html')) {
     event.respondWith(
       fetch(request)
@@ -80,13 +71,12 @@ self.addEventListener('fetch', (event) => {
           if (cachedResponse) {
             return cachedResponse
           }
-          return caches.match('/') // 兜底到首页
+          return caches.match('/')
         })
     )
     return
   }
 
-  // API 请求使用网络优先策略
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(request)
@@ -106,7 +96,6 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // 其他静态资源使用缓存优先策略（首次未命中时缓存）
   const targetCache = STATIC_ASSETS.includes(url.pathname) ? STATIC_CACHE : RUNTIME_CACHE
 
   event.respondWith(
@@ -133,7 +122,6 @@ self.addEventListener('fetch', (event) => {
   )
 })
 
-// 监听消息（用于手动更新缓存）
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting()

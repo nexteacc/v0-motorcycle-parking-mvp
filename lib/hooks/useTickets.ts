@@ -27,11 +27,6 @@ interface UseTicketsReturn {
   refresh: () => Promise<void>
 }
 
-/**
- * 统一的车辆列表查询 Hook
- * @param options 查询选项
- * @returns 车辆列表数据和操作方法
- */
 export function useTickets(options: UseTicketsOptions = {}): UseTicketsReturn {
   const {
     parkingLotId = "default",
@@ -49,7 +44,6 @@ export function useTickets(options: UseTicketsOptions = {}): UseTicketsReturn {
   const [searchQuery, setSearchQuery] = useState(defaultSearchQuery)
   const [statusFilter, setStatusFilter] = useState<FilterStatus>(defaultStatusFilter)
 
-  // 搜索防抖：延迟 300ms
   const debouncedSearchQuery = useDebounce(searchQuery, 300)
 
   const fetchTickets = useCallback(async () => {
@@ -68,9 +62,8 @@ export function useTickets(options: UseTicketsOptions = {}): UseTicketsReturn {
         query = query.eq("status", statusFilter)
       }
 
-      // 使用防抖后的搜索关键词（支持多国车牌格式，不强制转大写）
       if (debouncedSearchQuery.trim()) {
-        query = query.ilike("plate_number", `%${debouncedSearchQuery}%`) // ilike 不区分大小写
+        query = query.ilike("plate_number", `%${debouncedSearchQuery}%`)
       }
 
       const { data, error: queryError } = await query
@@ -94,11 +87,10 @@ export function useTickets(options: UseTicketsOptions = {}): UseTicketsReturn {
     setIsRefreshing(false)
   }, [fetchTickets])
 
-  // 初始加载和筛选条件变化时自动查询
   useEffect(() => {
     setIsLoading(true)
     fetchTickets().finally(() => setIsLoading(false))
-  }, [statusFilter, debouncedSearchQuery]) // 使用防抖后的搜索关键词
+  }, [statusFilter, debouncedSearchQuery])
 
   return {
     tickets,

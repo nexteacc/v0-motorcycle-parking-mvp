@@ -31,15 +31,14 @@ interface AnalysisInfo {
 
 const EMPTY_ANALYSIS: AnalysisInfo = { plateNumber: null, confidence: null, color: null }
 
-// 车牌号重复检查缓存（组件外部，避免重新渲染时丢失）
 interface PlateCheckCacheEntry {
   result: Ticket | null
   timestamp: number
 }
 
 const plateCheckCache = new Map<string, PlateCheckCacheEntry>()
-const PLATE_CHECK_TTL = 5 * 60 * 1000 // 5 分钟缓存
-const MAX_CACHE_SIZE = 100 // 最多缓存 100 条记录
+const PLATE_CHECK_TTL = 5 * 60 * 1000
+const MAX_CACHE_SIZE = 100
 
 export default function EntryPage() {
   const router = useRouter()
@@ -55,7 +54,7 @@ export default function EntryPage() {
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const cameraInputRef = useRef<HTMLInputElement>(null) // 用于直接触发系统相机
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const plateInputRef = useRef<HTMLInputElement>(null)
   const [isIOS, setIsIOS] = useState(false)
 
@@ -91,12 +90,10 @@ export default function EntryPage() {
     setFormError(null)
     setDuplicateTicket(null)
     setShowDuplicateDialog(false)
-    // 重置文件输入，允许重新选择
     if (cameraInputRef.current) cameraInputRef.current.value = ""
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
-  // 处理系统相机拍照（iOS/Android）
   const handleNativeCamera = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -109,7 +106,6 @@ export default function EntryPage() {
       }
     }
     reader.readAsDataURL(file)
-    // 重置 input，允许重复选择同一文件
     event.target.value = ""
   }
 
@@ -187,22 +183,17 @@ export default function EntryPage() {
   }
 
   const checkDuplicatePlate = async (plate: string): Promise<Ticket | null> => {
-    // 1. 检查缓存（使用小写和去除空格作为缓存键，因为大小写不影响结果）
     const cacheKey = plate.toLowerCase().trim()
     const cached = plateCheckCache.get(cacheKey)
     
     if (cached && Date.now() - cached.timestamp < PLATE_CHECK_TTL) {
-      // 缓存命中，立即返回（性能提升：从 100-400ms 降低到 < 1ms）
       return cached.result
     }
 
-    // 2. 缓存未命中，执行数据库查询
-    // 支持多国车牌格式的重复检测
-    // 先尝试精确匹配（保留原始格式，包括大小写、连字符、空格等）
     const { data: exactMatch } = await supabase
       .from("tickets")
       .select("*")
-      .eq("plate_number", plate) // 精确匹配
+      .eq("plate_number", plate)
       .eq("status", "active")
       .eq("parking_lot_id", "default")
       .order("entry_time", { ascending: false })
@@ -210,12 +201,10 @@ export default function EntryPage() {
       .maybeSingle()
 
     if (exactMatch) {
-      // 精确匹配找到结果，存入缓存并返回
       plateCheckCache.set(cacheKey, {
         result: exactMatch as Ticket,
         timestamp: Date.now(),
       })
-      // LRU 清理
       if (plateCheckCache.size > MAX_CACHE_SIZE) {
         const firstKey = plateCheckCache.keys().next().value
         if (firstKey) plateCheckCache.delete(firstKey)
@@ -223,11 +212,10 @@ export default function EntryPage() {
       return exactMatch as Ticket
     }
 
-    // 如果没有精确匹配，尝试不区分大小写的匹配（处理大小写变体）
     const { data: caseInsensitiveMatch } = await supabase
       .from("tickets")
       .select("*")
-      .ilike("plate_number", plate.replace(/[%_]/g, "\\$&")) // 转义特殊字符，精确匹配但大小写不敏感
+      .ilike("plate_number", plate.replace(/[%_]/g, "\\$&"))
       .eq("status", "active")
       .eq("parking_lot_id", "default")
       .order("entry_time", { ascending: false })
@@ -236,15 +224,12 @@ export default function EntryPage() {
 
     const result = caseInsensitiveMatch as Ticket | null
 
-    // 3. 将结果存入缓存（无论是否找到）
     plateCheckCache.set(cacheKey, {
       result,
       timestamp: Date.now(),
     })
 
-    // 4. LRU 策略：限制缓存大小，防止内存泄漏
     if (plateCheckCache.size > MAX_CACHE_SIZE) {
-      // 删除最旧的缓存项（Map 保持插入顺序）
       const firstKey = plateCheckCache.keys().next().value
       if (firstKey) plateCheckCache.delete(firstKey)
     }
@@ -296,7 +281,7 @@ export default function EntryPage() {
         .insert({
           plate_number: finalPlate,
           photo_url: uploadedPhotoUrl,
-          vehicle_color: analysisInfo.color, // 车辆颜色（从 OCR 识别）
+          vehicle_color: analysisInfo.color,
           status: forceCreate ? "abnormal" : "active",
           device_id: deviceId,
           parking_lot_id: "default",
@@ -347,7 +332,6 @@ export default function EntryPage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       <main className="mx-auto max-w-md px-4 py-6 space-y-4">
-        {/* 只在初始状态（idle）且没有照片时显示采集卡片 */}
         {viewState === "idle" && !photoPreview && (
           <>
             <Button
@@ -371,7 +355,6 @@ export default function EntryPage() {
                     <p className="text-xs font-medium">Camera</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5 opacity-0">Placeholder</p>
                   </div>
-                  {/* 隐藏的相机 input - 直接触发系统相机 */}
                   <input
                     ref={cameraInputRef}
                     type="file"

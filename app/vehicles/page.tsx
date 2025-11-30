@@ -48,8 +48,6 @@ export default function VehiclesPage() {
   })
   const { error: actionError, handleError, clearError } = useErrorHandler("Delete failed")
 
-  // 搜索防抖已在 useTickets hook 内部实现，无需额外处理
-
   const getStatusBadge = (status: TicketStatus) => {
     const { label, className } = getStatusBadgeConfig(status)
     return (
@@ -82,7 +80,6 @@ export default function VehiclesPage() {
 
       if (deleteError) throw deleteError
 
-      // 刷新列表
       await refresh()
       setTicketToDelete(null)
     } catch (err) {
@@ -113,7 +110,6 @@ export default function VehiclesPage() {
             <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} />
           </Button>
         </div>
-        {/* Stats */}
         <Card className="mb-4 bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-200/50">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
@@ -134,7 +130,6 @@ export default function VehiclesPage() {
             <Input
               value={searchQuery}
               onChange={(e) => {
-                // 支持多国车牌格式搜索，不强制转大写
                 setSearchQuery(e.target.value)
               }}
               placeholder="Search plate"
@@ -167,7 +162,6 @@ export default function VehiclesPage() {
           </div>
         </div>
 
-        {/* List */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -227,7 +221,6 @@ export default function VehiclesPage() {
         )}
       </main>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog 
         open={showDeleteDialog} 
         onOpenChange={(open) => {
